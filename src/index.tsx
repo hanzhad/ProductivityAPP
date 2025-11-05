@@ -2,7 +2,7 @@
 import { render } from 'solid-js/web';
 import App from './App';
 import { I18nProvider } from './utils/i18n';
-import './styles/index.css';
+import './index.css';
 
 const root = document.getElementById('root');
 

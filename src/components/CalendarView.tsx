@@ -1,13 +1,12 @@
-import { Component, createSignal, onMount, For, Show } from 'solid-js';
+import { Component, onMount, For, Show } from 'solid-js';
 import { Button } from '@kobalte/core/button';
-import { getCalendarEvents, CalendarEvent } from '../services/calendar.service';
+import { getCalendarEvents } from '../services/calendar.service';
 import { useI18n, getLocaleDateFormat } from '../utils/i18n';
+import { useCalendarStore } from '../stores';
 
 const CalendarView: Component = () => {
   const { t, locale } = useI18n();
-  const [events, setEvents] = createSignal<CalendarEvent[]>([]);
-  const [loading, setLoading] = createSignal(true);
-  const [error, setError] = createSignal<string>('');
+  const { store, setEvents, setLoading, setError } = useCalendarStore();
 
   onMount(async () => {
     await loadEvents();
@@ -45,34 +44,34 @@ const CalendarView: Component = () => {
         <h2 class="text-2xl font-semibold text-gray-900">{t('calendar.title')}</h2>
         <Button
           onClick={loadEvents}
-          disabled={loading()}
+          disabled={store.loading}
           class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors font-medium disabled:opacity-50"
         >
-          {loading() ? t('common.refreshing') : t('common.refresh')}
+          {store.loading ? t('common.refreshing') : t('common.refresh')}
         </Button>
       </div>
 
-      <Show when={error()}>
+      <Show when={store.error}>
         <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
-          {error()}
+          {store.error}
         </div>
       </Show>
 
-      <Show when={loading()}>
+      <Show when={store.loading}>
         <div class="flex flex-col items-center justify-center py-12 gap-4">
           <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
           <p class="text-gray-600">{t('calendar.loadingEvents')}</p>
         </div>
       </Show>
 
-      <Show when={!loading() && events().length === 0}>
+      <Show when={!store.loading && store.events.length === 0}>
         <div class="bg-white rounded-lg shadow p-12 text-center">
           <p class="text-xl text-gray-500">{t('calendar.noEvents')}</p>
         </div>
       </Show>
 
       <div class="flex flex-col gap-4">
-        <For each={events()}>
+        <For each={store.events}>
           {(event) => (
             <div class="bg-white rounded-lg shadow hover:shadow-lg transition-shadow p-5 active:scale-[0.98]">
               <div class="flex justify-between items-start mb-3 gap-3">
