@@ -1,0 +1,36 @@
+{
+  "name": "calendar-tasks-app",
+  "version": "1.0.0",
+  "description": "Calendar and Tasks App with Capacitor + SolidJS",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "android:dev": "npm run build && npx cap sync android && npx cap open android",
+    "ios:dev": "npm run build && npx cap sync ios && npx cap open ios",
+    "sync": "npx cap sync",
+    "sync:android": "npx cap sync android",
+    "sync:ios": "npx cap sync ios",
+    "add:android": "npx cap add android",
+    "add:ios": "npx cap add ios"
+  },
+  "dependencies": {
+    "@capacitor/android": "^5.5.1",
+    "@capacitor/core": "^5.5.1",
+    "@capacitor/ios": "^5.5.1",
+    "@kobalte/core": "^0.13.4",
+    "@solid-primitives/i18n": "^2.1.1",
+    "solid-js": "^1.8.7"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^5.5.1",
+    "@kobalte/tailwindcss": "^0.9.0",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.8",
+    "vite-plugin-solid": "^2.8.2"
+  }
+}
