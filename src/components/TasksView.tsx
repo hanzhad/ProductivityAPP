@@ -112,17 +112,17 @@ const TasksView: Component = () => {
 
   const getBadgeColor = (priority: string) => {
     const colors: Record<string, string> = {
-      high: 'bg-red-100 text-red-800',
-      medium: 'bg-yellow-100 text-yellow-800',
-      low: 'bg-green-100 text-green-800'
+      high: 'bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200',
+      medium: 'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200',
+      low: 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200'
     };
-    return colors[priority] || 'bg-gray-100 text-gray-800';
+    return colors[priority] || 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200';
   };
 
   return (
     <div class="max-w-4xl mx-auto">
       <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
-        <h2 class="text-2xl font-semibold text-gray-900">{t('tasks.title')}</h2>
+        <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">{t('tasks.title')}</h2>
         <Button
           onClick={loadTasks}
           disabled={loading()}
@@ -132,7 +132,7 @@ const TasksView: Component = () => {
         </Button>
       </div>
 
-      <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-800">
+      <div class="mb-4 p-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg text-blue-800 dark:text-blue-200">
         {t('alerts.appleRemindersPlugin')}
       </div>
 
@@ -142,7 +142,7 @@ const TasksView: Component = () => {
           class={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
             filter() === 'all'
               ? 'bg-primary text-white'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
           }`}
         >
           {t('common.all')} ({tasks().length})
@@ -152,7 +152,7 @@ const TasksView: Component = () => {
           class={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
             filter() === 'active'
               ? 'bg-primary text-white'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
           }`}
         >
           {t('common.active')} ({tasks().filter(t => !t.completed).length})
@@ -162,7 +162,7 @@ const TasksView: Component = () => {
           class={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
             filter() === 'completed'
               ? 'bg-primary text-white'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
           }`}
         >
           {t('common.completed')} ({tasks().filter(t => t.completed).length})
@@ -170,7 +170,7 @@ const TasksView: Component = () => {
       </div>
 
       <Show when={error()}>
-        <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
+        <div class="mb-4 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-red-800 dark:text-red-200">
           {error()}
         </div>
       </Show>
@@ -178,13 +178,13 @@ const TasksView: Component = () => {
       <Show when={loading()}>
         <div class="flex flex-col items-center justify-center py-12 gap-4">
           <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-          <p class="text-gray-600">{t('tasks.loadingTasks')}</p>
+          <p class="text-gray-600 dark:text-gray-400">{t('tasks.loadingTasks')}</p>
         </div>
       </Show>
 
       <Show when={!loading() && filteredTasks().length === 0}>
-        <div class="bg-white rounded-lg shadow p-12 text-center">
-          <p class="text-xl text-gray-500">{t('tasks.noTasks')}</p>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-12 text-center">
+          <p class="text-xl text-gray-500 dark:text-gray-400">{t('tasks.noTasks')}</p>
         </div>
       </Show>
 
@@ -193,7 +193,7 @@ const TasksView: Component = () => {
           {(task) => {
             const priorityBadge = getPriorityBadge(task.priority);
             return (
-              <div class={`bg-white rounded-lg shadow p-5 transition-all ${task.completed ? 'opacity-60' : ''}`}>
+              <div class={`bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-5 transition-all ${task.completed ? 'opacity-60' : ''}`}>
                 <div class="flex gap-4 items-start">
                   <Checkbox
                     checked={task.completed}
@@ -201,7 +201,7 @@ const TasksView: Component = () => {
                     class="pt-1"
                   >
                     <Checkbox.Input class="peer sr-only" />
-                    <Checkbox.Control class="h-5 w-5 rounded border-2 border-gray-300 bg-white peer-focus:ring-2 peer-focus:ring-primary peer-focus:ring-offset-2 data-[checked]:bg-primary data-[checked]:border-primary flex items-center justify-center">
+                    <Checkbox.Control class="h-5 w-5 rounded border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 peer-focus:ring-2 peer-focus:ring-primary peer-focus:ring-offset-2 dark:peer-focus:ring-offset-gray-800 data-[checked]:bg-primary data-[checked]:border-primary flex items-center justify-center">
                       <Checkbox.Indicator>
                         <svg class="h-3 w-3 text-white" viewBox="0 0 12 10" fill="none">
                           <path d="M1 5L4.5 8.5L11 1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -211,7 +211,7 @@ const TasksView: Component = () => {
                   </Checkbox>
                   <div class="flex-1 min-w-0">
                     <div class="flex justify-between items-start mb-2 gap-3">
-                      <h3 class={`text-base font-semibold text-gray-900 flex-1 break-words ${task.completed ? 'line-through' : ''}`}>
+                      <h3 class={`text-base font-semibold text-gray-900 dark:text-gray-100 flex-1 break-words ${task.completed ? 'line-through' : ''}`}>
                         {task.title}
                       </h3>
                       <span class={`px-3 py-1 rounded-full text-xs font-medium ${getBadgeColor(task.priority)}`}>
@@ -219,12 +219,12 @@ const TasksView: Component = () => {
                       </span>
                     </div>
                     <Show when={task.dueDate}>
-                      <div class="text-gray-600 text-sm mb-2">
+                      <div class="text-gray-600 dark:text-gray-400 text-sm mb-2">
                         📅 {formatDate(task.dueDate!)}
                       </div>
                     </Show>
                     <Show when={task.notes}>
-                      <div class="mt-2 pt-2 border-t border-gray-200 text-gray-600 text-sm leading-relaxed">
+                      <div class="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
                         {task.notes}
                       </div>
                     </Show>
