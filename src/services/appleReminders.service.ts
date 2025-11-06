@@ -1,5 +1,5 @@
-import { registerPlugin } from '@capacitor/core';
-import { AppleRemindersPlugin, AppleReminder } from '../types/apple-reminders.type';
+import { Capacitor, registerPlugin } from '@capacitor/core';
+import { AppleReminder, AppleRemindersPlugin } from '../types/apple-reminders.type';
 import { Task, TaskPriority } from '../stores/tasks.store';
 
 const AppleReminders = registerPlugin<AppleRemindersPlugin>('AppleReminders', {
@@ -46,14 +46,29 @@ const convertReminderToTask = (reminder: AppleReminder): Task => {
 
 export const appleRemindersService = {
   /**
+   * Check if running on iOS
+   */
+  isIOS(): boolean {
+    return Capacitor.getPlatform() === 'ios';
+  },
+
+  /**
    * Check if we have permission to access reminders
    */
   async checkPermissions(): Promise<boolean> {
+    // Only available on iOS
+    if (!this.isIOS()) {
+      return false;
+    }
+
     try {
-      const result = await AppleReminders.checkPermissions();
+      const result = await AppleReminders.checkRemindersPermissions();
       return result.granted;
-    } catch (error) {
-      console.error('Error checking reminders permissions:', error);
+    } catch (error: any) {
+      console.error(
+        'Error checking reminders permissions:',
+        error?.message || error?.code || error
+      );
       return false;
     }
   },
@@ -62,11 +77,19 @@ export const appleRemindersService = {
    * Request permission to access reminders
    */
   async requestPermissions(): Promise<boolean> {
+    // Only available on iOS
+    if (!this.isIOS()) {
+      return false;
+    }
+
     try {
-      const result = await AppleReminders.requestPermissions();
+      const result = await AppleReminders.requestRemindersPermissions();
       return result.granted;
-    } catch (error) {
-      console.error('Error requesting reminders permissions:', error);
+    } catch (error: any) {
+      console.error(
+        'Error requesting reminders permissions:',
+        error?.message || error?.code || error
+      );
       return false;
     }
   },
@@ -75,6 +98,11 @@ export const appleRemindersService = {
    * Fetch tasks from Apple Reminders
    */
   async getTasks(includeCompleted: boolean = false): Promise<Task[]> {
+    // Only available on iOS
+    if (!this.isIOS()) {
+      return [];
+    }
+
     try {
       // Check if we have permission
       const hasPermission = await this.checkPermissions();
@@ -88,9 +116,16 @@ export const appleRemindersService = {
 
       // Fetch reminders
       const result = await AppleReminders.getReminders({ includeCompleted });
-      return result.reminders.map(convertReminderToTask);
-    } catch (error) {
-      console.error('Error fetching reminders:', error);
+      const tasks = result.reminders.map(convertReminderToTask);
+
+      // Additional client-side filtering to ensure completed tasks are excluded
+      if (!includeCompleted) {
+        return tasks.filter((task) => !task.completed && task.status !== 'done');
+      }
+
+      return tasks;
+    } catch (error: any) {
+      console.error('Error fetching reminders:', error?.message || error?.code || error);
       throw error;
     }
   },
@@ -99,19 +134,17 @@ export const appleRemindersService = {
    * Get reminder lists
    */
   async getReminderLists(): Promise<Array<{ id: string; title: string }>> {
+    // Only available on iOS
+    if (!this.isIOS()) {
+      return [];
+    }
+
     try {
       const result = await AppleReminders.getReminderLists();
       return result.lists;
-    } catch (error) {
-      console.error('Error fetching reminder lists:', error);
+    } catch (error: any) {
+      console.error('Error fetching reminder lists:', error?.message || error?.code || error);
       return [];
     }
-  },
-
-  /**
-   * Check if running on iOS
-   */
-  isIOS(): boolean {
-    return /iPad|iPhone|iPod/.test(navigator.userAgent);
   },
 };

@@ -17,7 +17,8 @@ const GoogleAuthButton: Component = () => {
       await googleService.initialize();
       setIsInitialized(true);
       updateAuthState();
-    } catch (err) {
+    } catch (err: any) {
+      console.error('Error initializing Google API:', err?.message || err?.code || err);
       setError(t('errors.googleApiInit'));
     } finally {
       setLoading(false);
@@ -30,7 +31,8 @@ const GoogleAuthButton: Component = () => {
       setError('');
       await googleService.signIn();
       updateAuthState();
-    } catch (err) {
+    } catch (err: any) {
+      console.error('Error signing in to Google:', err?.message || err?.code || err);
       setError(t('errors.googleSignIn'));
     } finally {
       setLoading(false);
@@ -43,8 +45,6 @@ const GoogleAuthButton: Component = () => {
       setError('');
       await googleService.signOut();
       updateAuthState();
-    } catch (err) {
-      setError(t('errors.googleSignOut'));
     } finally {
       setLoading(false);
     }

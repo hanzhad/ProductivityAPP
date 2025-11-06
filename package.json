@@ -15,7 +15,8 @@
     "add:android": "npx cap add android",
     "add:ios": "npx cap add ios",
     "code:check": "eslint . --ext .ts,.tsx && prettier --check \"src/**/*.{ts,tsx,json,css}\"",
-    "code:fix": "eslint . --ext .ts,.tsx --fix && prettier --write \"src/**/*.{ts,tsx,json,css}\""
+    "code:fix": "eslint . --ext .ts,.tsx --fix && prettier --write \"src/**/*.{ts,tsx,json,css}\"",
+    "ios:dev:live": "npx cap run ios --livereload --external --host=0.0.0.0"
   },
   "dependencies": {
     "@capacitor/android": "^5.5.1",

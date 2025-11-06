@@ -41,6 +41,7 @@ export class TokenStorage {
 
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(dataToStore));
     } catch (error) {
+      console.error('Error saving token to localStorage:', error);
       // Don't throw - failing to save token shouldn't break the app
     }
   }
@@ -73,6 +74,7 @@ export class TokenStorage {
 
       return token;
     } catch (error) {
+      console.error('Error loading token from localStorage:', error);
       this.clearToken();
       return null;
     }
@@ -186,6 +188,7 @@ export class TokenStorage {
 
       return data.profile;
     } catch (error) {
+      console.error('Error loading profile from localStorage:', error);
       this.clearProfile();
       return null;
     }

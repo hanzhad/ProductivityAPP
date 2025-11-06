@@ -75,6 +75,7 @@ export class GoogleCalendar {
       const response = await calendar.calendarList.list();
       return response.result.items || [];
     } catch (error) {
+      console.error('Error getting calendar list:', error);
       throw error;
     }
   }
@@ -131,6 +132,7 @@ export class GoogleCalendar {
       const events = response.result.items;
       return events ? events.map((event: any) => this.mapEventToCalendarEvent(event)) : [];
     } catch (error) {
+      console.error('Error fetching events from calendar:', error);
       throw error;
     }
   }

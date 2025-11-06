@@ -204,6 +204,7 @@ export class GoogleSDK {
           this.gapiInitialized = true;
           resolve();
         } catch (error) {
+          console.error('Error initializing gapi client:', error);
           reject(error);
         }
       });

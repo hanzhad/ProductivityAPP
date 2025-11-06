@@ -47,10 +47,6 @@ const TasksView: Component = () => {
         <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">{t('tasks.title')}</h2>
       </div>
 
-      <div class="mb-4 p-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg text-blue-800 dark:text-blue-200">
-        {t('alerts.appleRemindersPlugin')}
-      </div>
-
       <Show when={store.error}>
         <div class="mb-4 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-red-800 dark:text-red-200">
           {store.error}
@@ -70,44 +66,46 @@ const TasksView: Component = () => {
         </div>
       </Show>
 
-      <div class="flex flex-col gap-3">
-        <For each={store.tasks}>
-          {(task) => {
-            const priorityBadge = getPriorityBadge(task.priority);
-            return (
-              <div
-                class={`bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-5 transition-all ${task.completed ? 'opacity-60' : ''}`}
-              >
-                <div class="flex gap-4 items-start">
-                  <div class="flex-1 min-w-0">
-                    <div class="flex justify-between items-start mb-2 gap-3">
-                      <h3
-                        class={`text-base font-semibold text-gray-900 dark:text-gray-100 flex-1 break-words ${task.completed ? 'line-through' : ''}`}
-                      >
-                        {task.title}
-                      </h3>
-                      <span
-                        class={`px-3 py-1 rounded-full text-xs font-medium ${getBadgeColor(task.priority)}`}
-                      >
-                        {priorityBadge.label}
-                      </span>
+      <div class="max-h-[calc(100vh-12rem)] overflow-y-auto scroll-smooth pr-2">
+        <div class="flex flex-col gap-3">
+          <For each={store.tasks}>
+            {(task) => {
+              const priorityBadge = getPriorityBadge(task.priority);
+              return (
+                <div
+                  class={`bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-5 transition-all ${task.completed ? 'opacity-60' : ''}`}
+                >
+                  <div class="flex gap-4 items-start">
+                    <div class="flex-1 min-w-0">
+                      <div class="flex justify-between items-start mb-2 gap-3">
+                        <h3
+                          class={`text-base font-semibold text-gray-900 dark:text-gray-100 flex-1 break-words ${task.completed ? 'line-through' : ''}`}
+                        >
+                          {task.title}
+                        </h3>
+                        <span
+                          class={`px-3 py-1 rounded-full text-xs font-medium ${getBadgeColor(task.priority)}`}
+                        >
+                          {priorityBadge.label}
+                        </span>
+                      </div>
+                      <Show when={task.dueDate}>
+                        <div class="text-gray-600 dark:text-gray-400 text-sm mb-2">
+                          📅 {formatDate(task.dueDate!.toISOString())}
+                        </div>
+                      </Show>
+                      <Show when={task.notes}>
+                        <div class="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+                          {task.notes}
+                        </div>
+                      </Show>
                     </div>
-                    <Show when={task.dueDate}>
-                      <div class="text-gray-600 dark:text-gray-400 text-sm mb-2">
-                        📅 {formatDate(task.dueDate!.toISOString())}
-                      </div>
-                    </Show>
-                    <Show when={task.notes}>
-                      <div class="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
-                        {task.notes}
-                      </div>
-                    </Show>
                   </div>
                 </div>
-              </div>
-            );
-          }}
-        </For>
+              );
+            }}
+          </For>
+        </div>
       </div>
     </div>
   );

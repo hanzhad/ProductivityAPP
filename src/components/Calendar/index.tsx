@@ -42,8 +42,8 @@ const Calendar: Component = () => {
 
       const calendarEvents = await googleService.fetchEvents(startOfMonth, endOfMonth);
       setEvents(calendarEvents);
-    } catch (err) {
-      console.error('Error loading events:', err);
+    } catch (err: any) {
+      console.error('Error loading events:', err?.message || err?.code || err);
       setError(t('errors.loadingEvents'));
     } finally {
       setLoading(false);

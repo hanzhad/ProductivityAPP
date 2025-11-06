@@ -31,6 +31,7 @@ interface TasksState {
   sortBy: 'createdAt' | 'dueDate' | 'priority' | 'title';
   sortOrder: 'asc' | 'desc';
   viewFilter: 'all' | 'active' | 'completed';
+  autoReloadInterval: number | null;
 }
 
 const [tasksStore, setTasksStore] = createStore<TasksState>({
@@ -44,6 +45,7 @@ const [tasksStore, setTasksStore] = createStore<TasksState>({
   sortBy: 'createdAt',
   sortOrder: 'desc',
   viewFilter: 'all',
+  autoReloadInterval: null,
 });
 
 export const useTasksStore = () => {
@@ -168,11 +170,33 @@ export const useTasksStore = () => {
     });
   };
 
-  const loadTasks = async () => {
+  const loadTasks = async (silent: boolean = false) => {
     try {
-      setLoading(true);
+      if (!silent) {
+        setLoading(true);
+      }
       setError('');
 
+      // Try to load from Apple Reminders if on iOS
+      const { appleRemindersService } = await import('../services/appleReminders.service');
+
+      if (appleRemindersService.isIOS()) {
+        try {
+          const tasks = await appleRemindersService.getTasks(false);
+          setTasks(tasks);
+          return;
+        } catch (error: any) {
+          console.error(
+            'Failed to load Apple Reminders, falling back to demo data:',
+            error?.message || error?.code || error
+          );
+          if (!silent) {
+            setError('errors.appleRemindersAccess');
+          }
+        }
+      }
+
+      // Fallback to demo tasks (only non-completed)
       const demoTasks: Task[] = [
         {
           id: '1',
@@ -200,18 +224,6 @@ export const useTasksStore = () => {
           updatedAt: new Date(),
         },
         {
-          id: '3',
-          title: 'tasks.demoTask3Title',
-          description: '',
-          status: 'done',
-          completed: true,
-          priority: 'low',
-          tags: [],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          completedAt: new Date(),
-        },
-        {
           id: '4',
           title: 'tasks.demoTask4Title',
           description: '',
@@ -226,10 +238,40 @@ export const useTasksStore = () => {
       ];
 
       setTasks(demoTasks);
-    } catch (e) {
-      setError('errors.loadingTasks');
+    } catch (e: any) {
+      console.error('Error loading tasks:', e?.message || e?.code || e);
+      if (!silent) {
+        setError('errors.loadingTasks');
+      }
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
+    }
+  };
+
+  const startAutoReload = async () => {
+    // Stop any existing interval
+    stopAutoReload();
+
+    // Check if we're on iOS before starting auto-reload
+    const { appleRemindersService } = await import('../services/appleReminders.service');
+    if (!appleRemindersService.isIOS()) {
+      return;
+    }
+
+    // Set up interval to reload tasks every 60 seconds
+    const intervalId = window.setInterval(() => {
+      loadTasks(true); // Silent reload
+    }, 60000); // 60 seconds
+
+    setTasksStore('autoReloadInterval', intervalId);
+  };
+
+  const stopAutoReload = () => {
+    if (tasksStore.autoReloadInterval !== null) {
+      window.clearInterval(tasksStore.autoReloadInterval);
+      setTasksStore('autoReloadInterval', null);
     }
   };
 
@@ -275,5 +317,7 @@ export const useTasksStore = () => {
     loadTasks,
     toggleTask,
     setViewFilter,
+    startAutoReload,
+    stopAutoReload,
   };
 };

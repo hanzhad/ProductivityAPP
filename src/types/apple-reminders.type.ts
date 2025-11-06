@@ -16,12 +16,12 @@ export interface AppleRemindersPlugin {
   /**
    * Check if reminders permission is granted
    */
-  checkPermissions(): Promise<{ granted: boolean }>;
+  checkRemindersPermissions(): Promise<{ granted: boolean }>;
 
   /**
    * Request permission to access reminders
    */
-  requestPermissions(): Promise<{ granted: boolean }>;
+  requestRemindersPermissions(): Promise<{ granted: boolean }>;
 
   /**
    * Fetch all reminders from the user's account

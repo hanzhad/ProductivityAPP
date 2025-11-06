@@ -1,11 +1,11 @@
 export const en = {
   app: {
-    title: '📅 Calendar & Tasks',
+    title: '📅 Calendar & Reminders',
   },
   tabs: {
     calendar: '📅 Calendar',
     notes: '📝 Notes',
-    tasks: '✓ Tasks',
+    tasks: '🔔 Reminders',
   },
   common: {
     loading: 'Loading...',
@@ -22,11 +22,12 @@ export const en = {
     permissionsRequired: 'Calendar and notes access required',
     loadingEvents: 'Failed to load calendar events',
     loadingNotes: 'Failed to load notes',
-    loadingTasks: 'Failed to load tasks',
+    loadingTasks: 'Failed to load reminders',
     requestingPermissions: 'Error requesting permissions',
     googleApiInit: 'Failed to initialize Google API',
     googleSignIn: 'Failed to sign in with Google',
     googleSignOut: 'Failed to sign out',
+    appleRemindersAccess: 'Unable to access Apple Reminders. Please grant permission in Settings.',
   },
   alerts: {
     appleNotesPlugin: 'ℹ️ Full integration with Apple Notes requires a native plugin',
@@ -50,16 +51,16 @@ export const en = {
     demoNote3Content: 'Add dark theme\nOptimize performance\nWrite tests',
   },
   tasks: {
-    title: '✓ Tasks',
-    noTasks: '📭 No tasks',
-    loadingTasks: 'Loading tasks...',
+    title: '🔔 Reminders',
+    noTasks: '📭 No reminders',
+    loadingTasks: 'Loading reminders...',
     priority: {
       high: 'High',
       medium: 'Medium',
       low: 'Low',
     },
     demoTask1Title: 'Complete project',
-    demoTask1Notes: 'Important task with deadline',
+    demoTask1Notes: 'Important reminder with deadline',
     demoTask2Title: 'Buy groceries',
     demoTask3Title: 'Call doctor',
     demoTask4Title: 'Prepare presentation',
@@ -72,7 +73,7 @@ export const en = {
   },
   auth: {
     initializing: 'Initializing Google API...',
-    signInPrompt: 'Please sign in with your Google account to access calendar and tasks',
+    signInPrompt: 'Please sign in with your Google account to access calendar and reminders',
     signedInAs: 'Signed in as',
     signInWithGoogle: 'Sign in with Google',
     signOut: 'Sign Out',

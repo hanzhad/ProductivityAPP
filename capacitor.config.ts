@@ -5,16 +5,21 @@ const config: CapacitorConfig = {
   appName: 'Calendar Tasks',
   webDir: 'dist',
   server: {
-    androidScheme: 'https'
+    androidScheme: 'https',
   },
   plugins: {
     Calendar: {
       permissions: {
         ios: ['calendar'],
-        android: ['READ_CALENDAR', 'WRITE_CALENDAR']
-      }
-    }
-  }
+        android: ['READ_CALENDAR', 'WRITE_CALENDAR'],
+      },
+    },
+    AppleReminders: {
+      permissions: {
+        ios: ['reminders'],
+      },
+    },
+  },
 };
 
 export default config;
