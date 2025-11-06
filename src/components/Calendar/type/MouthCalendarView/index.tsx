@@ -9,7 +9,7 @@ const MouthCalendarView: Component = () => {
       <CalendarGrid />
 
       {/* Selected Day's Events Panel */}
-      <EventsPanel />
+      <EventsPanel roundedFull />
     </div>
   );
 };

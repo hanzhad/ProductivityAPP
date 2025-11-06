@@ -67,7 +67,7 @@ const CalendarGrid: Component = () => {
 
   return (
     <div class="flex-1">
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-t-lg shadow dark:shadow-gray-900/50 p-4">
         {/* Week Days Grid - Vertical */}
         <div class="flex flex-col gap-3">
           <For each={weekDaysData()}>

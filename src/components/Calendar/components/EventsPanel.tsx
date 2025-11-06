@@ -3,7 +3,11 @@ import { Component, createEffect, createMemo, For, Show } from 'solid-js';
 import { getLocaleDateFormat, useI18n } from '../../../utils/i18n';
 import { useCalendarStore } from '../../../stores';
 
-const EventsPanel: Component = () => {
+type TEvent = {
+  roundedFull?: boolean;
+};
+
+const EventsPanel: Component<TEvent> = (props) => {
   const { t, locale } = useI18n();
 
   const { store, isEventInPast } = useCalendarStore();
@@ -61,7 +65,9 @@ const EventsPanel: Component = () => {
 
   return (
     <div class="lg:w-80 h-full">
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-4 sticky top-4 h-full">
+      <div
+        class={`bg-white dark:bg-gray-800 rounded-t-lg shadow dark:shadow-gray-900/50 p-4 sticky top-4 h-full ${props.roundedFull ? 'rounded-lg' : 'rounded-t-lg'}`}
+      >
         <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
           {isSameDay(store.selectedDate, new Date())
             ? `Today  ${todayFormatted()}`
