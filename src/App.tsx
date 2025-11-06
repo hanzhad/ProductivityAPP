@@ -1,6 +1,6 @@
 import { Component, createSignal, For } from 'solid-js';
 import { Tabs } from '@kobalte/core/tabs';
-import CalendarView from './components/CalendarView';
+import CalendarView from './components/Calendar';
 import NotesView from './components/NotesView';
 import TasksView from './components/TasksView';
 import { Language, useI18n } from './utils/i18n';
