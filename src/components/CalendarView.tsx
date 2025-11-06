@@ -18,15 +18,70 @@ const CalendarView: Component = () => {
   const { store, setEvents, setLoading, setError } = useCalendarStore();
   const [currentDate, setCurrentDate] = createSignal(new Date());
   const [selectedDate, setSelectedDate] = createSignal<Date>(new Date());
+  const [currentTime, setCurrentTime] = createSignal(new Date());
   let timeoutId: number | undefined;
+  let intervalId: number | undefined;
+  let midnightTimeoutId: number | undefined;
+
+  const getMillisecondsUntilMidnight = () => {
+    const now = new Date();
+    const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0);
+    return midnight.getTime() - now.getTime();
+  };
+
+  const isLastDayOfMonth = (date: Date) => {
+    const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+    return date.getDate() === lastDay.getDate();
+  };
+
+  const scheduleNextDayChange = () => {
+    if (midnightTimeoutId) {
+      clearTimeout(midnightTimeoutId);
+    }
+
+    const msUntilMidnight = getMillisecondsUntilMidnight();
+
+    midnightTimeoutId = setTimeout(() => {
+      const today = new Date();
+      const wasLastDay = isLastDayOfMonth(new Date(today.getTime() - 1000)); // Check yesterday
+
+      setSelectedDate(new Date(today));
+      setCurrentDate(new Date(today));
+      setCurrentTime(new Date(today));
+
+      // If we just passed the last day of the month, advance to next month
+      if (wasLastDay) {
+        const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+        setCurrentDate(nextMonth);
+        loadEvents();
+      }
+
+      // Schedule the next day change
+      scheduleNextDayChange();
+    }, msUntilMidnight) as unknown as number;
+  };
 
   onMount(async () => {
     await loadEvents();
+
+    // Job that runs every minute to update current time and check for past events
+    intervalId = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000) as unknown as number; // 60 seconds
+
+    // Schedule automatic day change at midnight
+    scheduleNextDayChange();
   });
 
   onCleanup(() => {
     if (timeoutId) {
       clearTimeout(timeoutId);
+    }
+    if (intervalId) {
+      clearInterval(intervalId);
+    }
+    if (midnightTimeoutId) {
+      clearTimeout(midnightTimeoutId);
     }
   });
 
@@ -99,6 +154,12 @@ const CalendarView: Component = () => {
     );
   };
 
+  const isEventInPast = (event: CalendarEvent) => {
+    const now = currentTime();
+    const eventEndDate = event.endDate ? new Date(event.endDate) : new Date(event.startDate);
+    return eventEndDate < now;
+  };
+
   const calendarDays = createMemo(() => {
     const current = currentDate();
     const year = current.getFullYear();
@@ -160,6 +221,32 @@ const CalendarView: Component = () => {
       const eventDate = new Date(event.startDate);
       return isSameDay(eventDate, selected);
     });
+  });
+
+  const nextUpcomingEvent = createMemo(() => {
+    const events = selectedDayEvents();
+    const now = currentTime();
+
+    // Find the first event that hasn't ended yet
+    const upcoming = events.find((event) => {
+      const eventEndDate = event.endDate ? new Date(event.endDate) : new Date(event.startDate);
+      return eventEndDate >= now;
+    });
+
+    return upcoming;
+  });
+
+  // Auto-scroll to next upcoming event when current event becomes past
+  createEffect(() => {
+    const nextEvent = nextUpcomingEvent();
+
+    if (nextEvent && isSameDay(selectedDate(), new Date())) {
+      // Only auto-scroll on today's events
+      const eventElement = document.querySelector(`[data-event-id="${nextEvent.id}"]`);
+      if (eventElement) {
+        eventElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
   });
 
   const monthYearText = createMemo(() => {
@@ -298,7 +385,13 @@ const CalendarView: Component = () => {
                     <div class="space-y-1">
                       <For each={day.events}>
                         {(event) => (
-                          <div class="text-xs px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 rounded truncate">
+                          <div
+                            class={`text-xs px-1.5 py-0.5 rounded truncate ${
+                              isEventInPast(event)
+                                ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 line-through opacity-60'
+                                : 'bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200'
+                            }`}
+                          >
                             {event.title}
                           </div>
                         )}
@@ -336,32 +429,75 @@ const CalendarView: Component = () => {
             <Show when={!store.loading}>
               <div class="space-y-3">
                 <For each={selectedDayEvents()}>
-                  {(event) => (
-                    <div class="border-l-4 border-blue-500 pl-3 py-2">
-                      <h4 class="font-semibold text-gray-900 dark:text-gray-100 text-sm mb-1">
-                        {event.title}
-                      </h4>
-                      <div class="text-xs text-gray-600 dark:text-gray-400 mb-1">
-                        🕐 {formatTime(event.startDate)}
-                        <Show when={event.endDate}>{' - ' + formatTime(event.endDate!)}</Show>
+                  {(event) => {
+                    const isPast = isEventInPast(event);
+                    const isNextUpcoming = nextUpcomingEvent()?.id === event.id;
+                    return (
+                      <div
+                        data-event-id={event.id}
+                        class={`border-l-4 pl-3 py-2 transition-all ${
+                          isPast
+                            ? 'border-gray-400 dark:border-gray-600 opacity-50'
+                            : isNextUpcoming
+                              ? 'border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-900/20'
+                              : 'border-blue-500'
+                        }`}
+                      >
+                        <h4
+                          class={`font-semibold text-sm mb-1 ${
+                            isPast
+                              ? 'text-gray-500 dark:text-gray-500 line-through'
+                              : 'text-gray-900 dark:text-gray-100'
+                          }`}
+                        >
+                          {event.title}
+                        </h4>
+                        <div
+                          class={`text-xs mb-1 ${
+                            isPast
+                              ? 'text-gray-400 dark:text-gray-600'
+                              : 'text-gray-600 dark:text-gray-400'
+                          }`}
+                        >
+                          🕐 {formatTime(event.startDate)}
+                          <Show when={event.endDate}>{' - ' + formatTime(event.endDate!)}</Show>
+                        </div>
+                        <Show when={event.location}>
+                          <div
+                            class={`text-xs mb-1 ${
+                              isPast
+                                ? 'text-gray-400 dark:text-gray-600'
+                                : 'text-gray-600 dark:text-gray-400'
+                            }`}
+                          >
+                            📍 {event.location}
+                          </div>
+                        </Show>
+                        <Show when={event.calendarTitle}>
+                          <span
+                            class={`inline-block px-2 py-0.5 rounded text-xs ${
+                              isPast
+                                ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-500'
+                                : 'bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200'
+                            }`}
+                          >
+                            {event.calendarTitle}
+                          </span>
+                        </Show>
+                        <Show when={event.notes}>
+                          <div
+                            class={`mt-2 text-xs ${
+                              isPast
+                                ? 'text-gray-500 dark:text-gray-600'
+                                : 'text-gray-700 dark:text-gray-300'
+                            }`}
+                          >
+                            {event.notes}
+                          </div>
+                        </Show>
                       </div>
-                      <Show when={event.location}>
-                        <div class="text-xs text-gray-600 dark:text-gray-400 mb-1">
-                          📍 {event.location}
-                        </div>
-                      </Show>
-                      <Show when={event.calendarTitle}>
-                        <span class="inline-block px-2 py-0.5 bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 rounded text-xs">
-                          {event.calendarTitle}
-                        </span>
-                      </Show>
-                      <Show when={event.notes}>
-                        <div class="mt-2 text-xs text-gray-700 dark:text-gray-300">
-                          {event.notes}
-                        </div>
-                      </Show>
-                    </div>
-                  )}
+                    );
+                  }}
                 </For>
               </div>
             </Show>
