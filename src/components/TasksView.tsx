@@ -60,7 +60,8 @@ const TasksView: Component = () => {
       ];
 
       setTasks(demoTasks);
-    } catch (err) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (e) {
       setError(t('errors.loadingTasks'));
     } finally {
       setLoading(false);
@@ -89,7 +90,7 @@ const TasksView: Component = () => {
     });
   };
 
-  const getPriorityBadge = (priority: string) => {
+  const getPriorityBadge = (priority: 'low' | 'medium' | 'high') => {
     const variants: Record<string, 'error' | 'warning' | 'success'> = {
       high: 'error',
       medium: 'warning',
@@ -97,7 +98,7 @@ const TasksView: Component = () => {
     };
     return {
       variant: variants[priority],
-      label: t(`tasks.priority.${priority}`),
+      label: t(`tasks.priority.${priority}` as const),
     };
   };
 
