@@ -21,9 +21,13 @@
     "@capacitor/android": "^5.5.1",
     "@capacitor/core": "^5.5.1",
     "@capacitor/ios": "^5.5.1",
-    "@kobalte/core": "^0.13.4",
+    "@kobalte/core": "^0.13.11",
     "@solid-primitives/i18n": "^2.1.1",
-    "solid-js": "^1.8.7"
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "solid-js": "^1.8.7",
+    "tailwind-merge": "^3.3.1",
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@capacitor/cli": "^5.5.1",

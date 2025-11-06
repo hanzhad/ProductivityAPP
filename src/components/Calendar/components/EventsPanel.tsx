@@ -1,7 +1,7 @@
-import { formatTime, isSameDay } from './utils';
+import { formatTime, isSameDay } from '../utils';
 import { Component, createEffect, createMemo, For, Show } from 'solid-js';
-import { getLocaleDateFormat, useI18n } from '../../utils/i18n';
-import { useCalendarStore } from '../../stores';
+import { getLocaleDateFormat, useI18n } from '../../../utils/i18n';
+import { useCalendarStore } from '../../../stores';
 
 const EventsPanel: Component = () => {
   const { t, locale } = useI18n();
@@ -60,13 +60,19 @@ const EventsPanel: Component = () => {
   });
 
   return (
-    <div class="lg:w-80">
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-4 sticky top-4 min-h-[400px]">
+    <div class="lg:w-80 h-full">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-4 sticky top-4 h-full">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
           {isSameDay(store.selectedDate, new Date())
             ? `Today  ${todayFormatted()}`
             : selectedDayFormatted()}
         </h3>
+
+        <Show when={store.error}>
+          <div class="mb-4 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-red-800 dark:text-red-200">
+            {store.error}
+          </div>
+        </Show>
 
         <Show when={store.loading}>
           <div class="flex flex-col items-center justify-center py-8 gap-3">

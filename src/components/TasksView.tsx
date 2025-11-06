@@ -118,7 +118,7 @@ const TasksView: Component = () => {
   };
 
   return (
-    <div class="max-w-4xl mx-auto">
+    <div class="max-w-[400px] mx-auto">
       <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
         <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">{t('tasks.title')}</h2>
         <Button

@@ -1,8 +1,8 @@
 import { Component, createMemo, For } from 'solid-js';
-import { isSameDay } from './utils';
-import { TCalendarDay } from './types';
-import { useCalendarStore } from '../../stores';
-import { useI18n } from '../../utils/i18n';
+import { isSameDay } from '../../utils';
+import { TCalendarDay } from '../../types';
+import { useCalendarStore } from '../../../../stores';
+import { useI18n } from '../../../../utils/i18n';
 
 const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
