@@ -1,0 +1,47 @@
+App/build
+App/Pods
+App/output
+App/App/public
+DerivedData
+xcuserdata
+# Xcode
+xcuserdata/
+*.xcuserstate
+*.xcworkspace/xcshareddata/
+project.xcworkspace/
+DerivedData/
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Build products
+build/
+Pods/
+
+# Swift Package Manager
+.swiftpm/
+.build/
+
+# Carthage
+Carthage/Build
+
+# fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
+# Code Injection
+iOSInjectionProject/
+
+# Keep these files:
+# !App/App/AppleRemindersPlugin.swift
+# !App/App/AppleRemindersPlugin.m
+# !App/App/Info.plist
+# Cordova plugins for Capacitor
+capacitor-cordova-ios-plugins
+
+# Generated Config files
+App/App/capacitor.config.json
+App/App/config.xml
