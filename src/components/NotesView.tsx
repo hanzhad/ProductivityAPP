@@ -1,6 +1,6 @@
-import { Component, createSignal, onMount, For, Show } from 'solid-js';
+import { Component, createSignal, For, onMount, Show } from 'solid-js';
 import { Button } from '@kobalte/core/button';
-import { useI18n, getLocaleDateFormat } from '../utils/i18n';
+import { getLocaleDateFormat, useI18n } from '../utils/i18n';
 
 interface Note {
   id: string;
@@ -31,22 +31,22 @@ const NotesView: Component = () => {
           title: t('notes.demoNote1Title'),
           content: t('notes.demoNote1Content'),
           createdDate: new Date().toISOString(),
-          modifiedDate: new Date().toISOString()
+          modifiedDate: new Date().toISOString(),
         },
         {
           id: '2',
           title: t('notes.demoNote2Title'),
           content: t('notes.demoNote2Content'),
           createdDate: new Date(Date.now() - 86400000).toISOString(),
-          modifiedDate: new Date(Date.now() - 86400000).toISOString()
+          modifiedDate: new Date(Date.now() - 86400000).toISOString(),
         },
         {
           id: '3',
           title: t('notes.demoNote3Title'),
           content: t('notes.demoNote3Content'),
           createdDate: new Date(Date.now() - 172800000).toISOString(),
-          modifiedDate: new Date(Date.now() - 172800000).toISOString()
-        }
+          modifiedDate: new Date(Date.now() - 172800000).toISOString(),
+        },
       ];
 
       setNotes(demoNotes);
@@ -66,7 +66,7 @@ const NotesView: Component = () => {
       month: 'long',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
@@ -95,7 +95,7 @@ const NotesView: Component = () => {
 
       <Show when={loading()}>
         <div class="flex flex-col items-center justify-center py-12 gap-4">
-          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
           <p class="text-gray-600 dark:text-gray-400">{t('notes.loadingNotes')}</p>
         </div>
       </Show>
@@ -110,7 +110,9 @@ const NotesView: Component = () => {
         <For each={notes()}>
           {(note) => (
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 hover:shadow-lg dark:hover:shadow-gray-900/70 transition-shadow p-5 active:scale-[0.98] flex flex-col min-h-[180px]">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">{note.title}</h3>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">
+                {note.title}
+              </h3>
               <div class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-4 flex-1 whitespace-pre-wrap">
                 {note.content}
               </div>

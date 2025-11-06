@@ -1,0 +1,9 @@
+dist
+node_modules
+coverage
+.capacitor
+android
+ios
+package-lock.json
+pnpm-lock.yaml
+yarn.lock

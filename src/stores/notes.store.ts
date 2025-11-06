@@ -83,7 +83,10 @@ export const useNotesStore = () => {
   };
 
   const removeFilterTag = (tag: string) => {
-    setNotesStore('filterTags', notesStore.filterTags.filter((t) => t !== tag));
+    setNotesStore(
+      'filterTags',
+      notesStore.filterTags.filter((t) => t !== tag)
+    );
   };
 
   const clearFilters = () => {

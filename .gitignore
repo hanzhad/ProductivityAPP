@@ -10,6 +10,11 @@ build/
 # Capacitor
 android/
 ios/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
 .capacitor/
 
 # IDE
@@ -22,11 +27,6 @@ ios/
 # OS
 .DS_Store
 Thumbs.db
-
-# Environment
-.env
-.env.local
-.env.*.local
 
 # Logs
 *.log

@@ -1,7 +1,7 @@
-import { Component, createSignal, onMount, For, Show } from 'solid-js';
+import { Component, createSignal, For, onMount, Show } from 'solid-js';
 import { Button } from '@kobalte/core/button';
 import { Checkbox } from '@kobalte/core/checkbox';
-import { useI18n, getLocaleDateFormat } from '../utils/i18n';
+import { getLocaleDateFormat, useI18n } from '../utils/i18n';
 
 interface Task {
   id: string;
@@ -35,28 +35,28 @@ const TasksView: Component = () => {
           completed: false,
           dueDate: new Date(Date.now() + 86400000 * 2).toISOString(),
           priority: 'high',
-          notes: t('tasks.demoTask1Notes')
+          notes: t('tasks.demoTask1Notes'),
         },
         {
           id: '2',
           title: t('tasks.demoTask2Title'),
           completed: false,
           dueDate: new Date().toISOString(),
-          priority: 'medium'
+          priority: 'medium',
         },
         {
           id: '3',
           title: t('tasks.demoTask3Title'),
           completed: true,
-          priority: 'low'
+          priority: 'low',
         },
         {
           id: '4',
           title: t('tasks.demoTask4Title'),
           completed: false,
           dueDate: new Date(Date.now() + 86400000 * 7).toISOString(),
-          priority: 'high'
-        }
+          priority: 'high',
+        },
       ];
 
       setTasks(demoTasks);
@@ -72,9 +72,9 @@ const TasksView: Component = () => {
     const allTasks = tasks();
     switch (filter()) {
       case 'active':
-        return allTasks.filter(t => !t.completed);
+        return allTasks.filter((t) => !t.completed);
       case 'completed':
-        return allTasks.filter(t => t.completed);
+        return allTasks.filter((t) => t.completed);
       default:
         return allTasks;
     }
@@ -86,7 +86,7 @@ const TasksView: Component = () => {
     return date.toLocaleDateString(localeFormat, {
       day: 'numeric',
       month: 'long',
-      year: 'numeric'
+      year: 'numeric',
     });
   };
 
@@ -94,27 +94,25 @@ const TasksView: Component = () => {
     const variants: Record<string, 'error' | 'warning' | 'success'> = {
       high: 'error',
       medium: 'warning',
-      low: 'success'
+      low: 'success',
     };
-    return { 
-      variant: variants[priority], 
-      label: t(`tasks.priority.${priority}` as any)
+    return {
+      variant: variants[priority],
+      label: t(`tasks.priority.${priority}`),
     };
   };
 
   const toggleTask = (taskId: string) => {
-    setTasks(tasks().map(task => 
-      task.id === taskId 
-        ? { ...task, completed: !task.completed }
-        : task
-    ));
+    setTasks(
+      tasks().map((task) => (task.id === taskId ? { ...task, completed: !task.completed } : task))
+    );
   };
 
   const getBadgeColor = (priority: string) => {
     const colors: Record<string, string> = {
       high: 'bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200',
       medium: 'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200',
-      low: 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200'
+      low: 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200',
     };
     return colors[priority] || 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200';
   };
@@ -155,7 +153,7 @@ const TasksView: Component = () => {
               : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
           }`}
         >
-          {t('common.active')} ({tasks().filter(t => !t.completed).length})
+          {t('common.active')} ({tasks().filter((t) => !t.completed).length})
         </Button>
         <Button
           onClick={() => setFilter('completed')}
@@ -165,7 +163,7 @@ const TasksView: Component = () => {
               : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
           }`}
         >
-          {t('common.completed')} ({tasks().filter(t => t.completed).length})
+          {t('common.completed')} ({tasks().filter((t) => t.completed).length})
         </Button>
       </div>
 
@@ -177,7 +175,7 @@ const TasksView: Component = () => {
 
       <Show when={loading()}>
         <div class="flex flex-col items-center justify-center py-12 gap-4">
-          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
           <p class="text-gray-600 dark:text-gray-400">{t('tasks.loadingTasks')}</p>
         </div>
       </Show>
@@ -193,7 +191,9 @@ const TasksView: Component = () => {
           {(task) => {
             const priorityBadge = getPriorityBadge(task.priority);
             return (
-              <div class={`bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-5 transition-all ${task.completed ? 'opacity-60' : ''}`}>
+              <div
+                class={`bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-5 transition-all ${task.completed ? 'opacity-60' : ''}`}
+              >
                 <div class="flex gap-4 items-start">
                   <Checkbox
                     checked={task.completed}
@@ -204,17 +204,27 @@ const TasksView: Component = () => {
                     <Checkbox.Control class="h-5 w-5 rounded border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 peer-focus:ring-2 peer-focus:ring-primary peer-focus:ring-offset-2 dark:peer-focus:ring-offset-gray-800 data-[checked]:bg-primary data-[checked]:border-primary flex items-center justify-center">
                       <Checkbox.Indicator>
                         <svg class="h-3 w-3 text-white" viewBox="0 0 12 10" fill="none">
-                          <path d="M1 5L4.5 8.5L11 1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                          <path
+                            d="M1 5L4.5 8.5L11 1.5"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
                         </svg>
                       </Checkbox.Indicator>
                     </Checkbox.Control>
                   </Checkbox>
                   <div class="flex-1 min-w-0">
                     <div class="flex justify-between items-start mb-2 gap-3">
-                      <h3 class={`text-base font-semibold text-gray-900 dark:text-gray-100 flex-1 break-words ${task.completed ? 'line-through' : ''}`}>
+                      <h3
+                        class={`text-base font-semibold text-gray-900 dark:text-gray-100 flex-1 break-words ${task.completed ? 'line-through' : ''}`}
+                      >
                         {task.title}
                       </h3>
-                      <span class={`px-3 py-1 rounded-full text-xs font-medium ${getBadgeColor(task.priority)}`}>
+                      <span
+                        class={`px-3 py-1 rounded-full text-xs font-medium ${getBadgeColor(task.priority)}`}
+                      >
                         {priorityBadge.label}
                       </span>
                     </div>

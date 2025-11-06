@@ -1,38 +1,21 @@
-import { Component, createSignal, onMount, Show, For } from 'solid-js';
-import { Button } from '@kobalte/core/button';
+import { Component, createSignal, For } from 'solid-js';
 import { Tabs } from '@kobalte/core/tabs';
 import CalendarView from './components/CalendarView';
 import NotesView from './components/NotesView';
 import TasksView from './components/TasksView';
-import { requestPermissions } from './services/calendar.service';
-import { useI18n, Language } from './utils/i18n';
+import { Language, useI18n } from './utils/i18n';
 
 type View = 'calendar' | 'notes' | 'tasks';
+
+const languages: { code: Language; label: string }[] = [
+  { code: 'en', label: 'EN' },
+  { code: 'uk', label: 'УК' },
+  { code: 'ru', label: 'РУ' },
+];
 
 const App: Component = () => {
   const { t, locale, setLocale } = useI18n();
   const [currentView, setCurrentView] = createSignal<View>('calendar');
-  const [permissionsGranted, setPermissionsGranted] = createSignal(false);
-  const [error, setError] = createSignal<string>('');
-
-  onMount(async () => {
-    try {
-      const granted = await requestPermissions();
-      setPermissionsGranted(granted);
-      if (!granted) {
-        setError(t('errors.permissionsRequired'));
-      }
-    } catch (err) {
-      console.error('Error requesting permissions:', err);
-      setError(t('errors.requestingPermissions'));
-    }
-  });
-
-  const languages: { code: Language; label: string }[] = [
-    { code: 'en', label: 'EN' },
-    { code: 'uk', label: 'УК' },
-    { code: 'ru', label: 'РУ' }
-  ];
 
   return (
     <div class="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -84,33 +67,15 @@ const App: Component = () => {
         </Tabs.List>
 
         <main class="flex-1 p-4 overflow-y-auto bg-gray-50 dark:bg-gray-900">
-          <Show when={error()}>
-            <div class="mb-4 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-center">
-              <p class="mb-3 text-red-800 dark:text-red-200 font-medium">{error()}</p>
-              <Button
-                onClick={async () => {
-                  const granted = await requestPermissions();
-                  setPermissionsGranted(granted);
-                  if (granted) setError('');
-                }}
-                class="px-4 py-2 bg-gray-600 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors font-medium text-sm"
-              >
-                {t('common.retry')}
-              </Button>
-            </div>
-          </Show>
-
-          <Show when={permissionsGranted()}>
-            <Tabs.Content value="calendar">
-              <CalendarView />
-            </Tabs.Content>
-            <Tabs.Content value="notes">
-              <NotesView />
-            </Tabs.Content>
-            <Tabs.Content value="tasks">
-              <TasksView />
-            </Tabs.Content>
-          </Show>
+          <Tabs.Content value="calendar">
+            <CalendarView />
+          </Tabs.Content>
+          <Tabs.Content value="notes">
+            <NotesView />
+          </Tabs.Content>
+          <Tabs.Content value="tasks">
+            <TasksView />
+          </Tabs.Content>
         </main>
       </Tabs>
     </div>

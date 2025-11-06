@@ -1,4 +1,11 @@
-import {createContext, useContext, ParentComponent, createSignal, Accessor, children, createMemo} from 'solid-js';
+import {
+  Accessor,
+  createContext,
+  createMemo,
+  createSignal,
+  ParentComponent,
+  useContext,
+} from 'solid-js';
 import * as i18n from '@solid-primitives/i18n';
 import { en, Translation } from '../i18n/en';
 import { uk } from '../i18n/uk';
@@ -48,9 +55,7 @@ export const I18nProvider: ParentComponent = (props) => {
   };
 
   return (
-    <I18nProviderContext.Provider value={value}>
-      {props.children}
-    </I18nProviderContext.Provider>
+    <I18nProviderContext.Provider value={value}>{props.children}</I18nProviderContext.Provider>
   );
 };
 
