@@ -1,7 +1,7 @@
 import { createStore } from 'solid-js/store';
 
 export type TaskStatus = 'todo' | 'in-progress' | 'done';
-export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
+export type TaskPriority = 'low' | 'medium' | 'high';
 
 export interface Task {
   id: string;
@@ -16,6 +16,8 @@ export interface Task {
   createdAt: Date;
   updatedAt: Date;
   completedAt?: Date;
+  completed: boolean;
+  notes?: string;
 }
 
 interface TasksState {
@@ -28,6 +30,7 @@ interface TasksState {
   filterTags: string[];
   sortBy: 'createdAt' | 'dueDate' | 'priority' | 'title';
   sortOrder: 'asc' | 'desc';
+  viewFilter: 'all' | 'active' | 'completed';
 }
 
 const [tasksStore, setTasksStore] = createStore<TasksState>({
@@ -40,6 +43,7 @@ const [tasksStore, setTasksStore] = createStore<TasksState>({
   filterTags: [],
   sortBy: 'createdAt',
   sortOrder: 'desc',
+  viewFilter: 'all',
 });
 
 export const useTasksStore = () => {
@@ -160,7 +164,88 @@ export const useTasksStore = () => {
       filterTags: [],
       sortBy: 'createdAt',
       sortOrder: 'desc',
+      viewFilter: 'all',
     });
+  };
+
+  const loadTasks = async () => {
+    try {
+      setLoading(true);
+      setError('');
+
+      const demoTasks: Task[] = [
+        {
+          id: '1',
+          title: 'tasks.demoTask1Title',
+          description: '',
+          status: 'todo',
+          completed: false,
+          dueDate: new Date(Date.now() + 86400000 * 2),
+          priority: 'high',
+          notes: 'tasks.demoTask1Notes',
+          tags: [],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: '2',
+          title: 'tasks.demoTask2Title',
+          description: '',
+          status: 'todo',
+          completed: false,
+          dueDate: new Date(),
+          priority: 'medium',
+          tags: [],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: '3',
+          title: 'tasks.demoTask3Title',
+          description: '',
+          status: 'done',
+          completed: true,
+          priority: 'low',
+          tags: [],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          completedAt: new Date(),
+        },
+        {
+          id: '4',
+          title: 'tasks.demoTask4Title',
+          description: '',
+          status: 'todo',
+          completed: false,
+          dueDate: new Date(Date.now() + 86400000 * 7),
+          priority: 'high',
+          tags: [],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      setTasks(demoTasks);
+    } catch (e) {
+      setError('errors.loadingTasks');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleTask = (taskId: string) => {
+    const task = getTaskById(taskId);
+    if (task) {
+      const newStatus: TaskStatus = task.status === 'done' ? 'todo' : 'done';
+      updateTaskStatus(taskId, newStatus);
+      setTasksStore('tasks', (t) => t.id === taskId, {
+        completed: newStatus === 'done',
+      });
+    }
+  };
+
+  const setViewFilter = (filter: 'all' | 'active' | 'completed') => {
+    setTasksStore('viewFilter', filter);
   };
 
   return {
@@ -187,5 +272,8 @@ export const useTasksStore = () => {
     getOverdueTasks,
     getAllTags,
     reset,
+    loadTasks,
+    toggleTask,
+    setViewFilter,
   };
 };
