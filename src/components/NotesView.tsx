@@ -51,7 +51,6 @@ const NotesView: Component = () => {
 
       setNotes(demoNotes);
     } catch (err) {
-      console.error('Error loading notes:', err);
       setError(t('errors.loadingNotes'));
     } finally {
       setLoading(false);

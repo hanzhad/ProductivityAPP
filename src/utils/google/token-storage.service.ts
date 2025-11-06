@@ -40,12 +40,7 @@ export class TokenStorage {
       };
 
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(dataToStore));
-      console.log('✓ Token saved to localStorage', {
-        expires_at: new Date(storedToken.expires_at).toISOString(),
-        scopes: storedToken.scope,
-      });
     } catch (error) {
-      console.error('Error saving token to localStorage:', error);
       // Don't throw - failing to save token shouldn't break the app
     }
   }
@@ -57,7 +52,6 @@ export class TokenStorage {
     try {
       const stored = localStorage.getItem(this.STORAGE_KEY);
       if (!stored) {
-        console.log('No token found in localStorage');
         return null;
       }
 
@@ -65,7 +59,6 @@ export class TokenStorage {
 
       // Check version compatibility
       if (data.version !== this.TOKEN_VERSION) {
-        console.warn('Token version mismatch, clearing old token');
         this.clearToken();
         return null;
       }
@@ -74,19 +67,12 @@ export class TokenStorage {
 
       // Validate token structure
       if (!token.access_token || !token.expires_at) {
-        console.warn('Invalid token structure, clearing');
         this.clearToken();
         return null;
       }
 
-      console.log('✓ Token loaded from localStorage', {
-        expires_at: new Date(token.expires_at).toISOString(),
-        age_hours: ((Date.now() - token.stored_at) / (1000 * 60 * 60)).toFixed(2),
-      });
-
       return token;
     } catch (error) {
-      console.error('Error loading token from localStorage:', error);
       this.clearToken();
       return null;
     }
@@ -118,7 +104,6 @@ export class TokenStorage {
 
     // Check if token is not expired
     if (this.isTokenExpired(token)) {
-      console.log('Stored token is expired');
       return false;
     }
 
@@ -131,9 +116,8 @@ export class TokenStorage {
   public static clearToken(): void {
     try {
       localStorage.removeItem(this.STORAGE_KEY);
-      console.log('✓ Token cleared from localStorage');
     } catch (error) {
-      console.error('Error clearing token from localStorage:', error);
+      // Silently fail
     }
   }
 
@@ -177,9 +161,8 @@ export class TokenStorage {
       };
 
       localStorage.setItem(this.PROFILE_STORAGE_KEY, JSON.stringify(dataToStore));
-      console.log('✓ User profile saved to localStorage');
     } catch (error) {
-      console.error('Error saving profile to localStorage:', error);
+      // Silently fail
     }
   }
 
@@ -197,15 +180,12 @@ export class TokenStorage {
 
       // Check version compatibility
       if (data.version !== this.PROFILE_VERSION) {
-        console.warn('Profile version mismatch, clearing old profile');
         this.clearProfile();
         return null;
       }
 
-      console.log('✓ User profile loaded from localStorage');
       return data.profile;
     } catch (error) {
-      console.error('Error loading profile from localStorage:', error);
       this.clearProfile();
       return null;
     }
@@ -217,9 +197,8 @@ export class TokenStorage {
   public static clearProfile(): void {
     try {
       localStorage.removeItem(this.PROFILE_STORAGE_KEY);
-      console.log('✓ User profile cleared from localStorage');
     } catch (error) {
-      console.error('Error clearing profile from localStorage:', error);
+      // Silently fail
     }
   }
 }

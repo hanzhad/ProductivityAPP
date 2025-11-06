@@ -11,8 +11,6 @@ export const useAuthStore = () => {
 
     if (signedIn) {
       googleService.getUserProfile().then((profile) => {
-        console.log('User Profile:', profile);
-
         setUserEmail(profile.email);
       });
     } else {

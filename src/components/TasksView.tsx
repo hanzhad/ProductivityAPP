@@ -61,7 +61,6 @@ const TasksView: Component = () => {
 
       setTasks(demoTasks);
     } catch (err) {
-      console.error('Error loading tasks:', err);
       setError(t('errors.loadingTasks'));
     } finally {
       setLoading(false);

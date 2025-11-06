@@ -30,14 +30,11 @@ class GoogleService {
   }
 
   public async signIn() {
-    console.log('🔐 Starting sign-in process...');
     await this.initialize();
     await this.auth.signIn();
-    console.log('🔐 Sign-in completed');
 
     // Verify authentication
     const isSignedIn = this.isSignedIn();
-    console.log('Sign-in verification:', isSignedIn ? '✓ Success' : '✗ Failed');
 
     if (!isSignedIn) {
       throw new Error('Sign-in completed but user is not authenticated');

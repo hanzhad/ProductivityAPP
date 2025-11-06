@@ -23,11 +23,6 @@ export class GoogleCalendar {
         oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
       }
 
-      console.log('Fetching calendar events...', {
-        timeMin: now.toISOString(),
-        timeMax: oneMonthLater.toISOString(),
-      });
-
       const calendar = this.getCalendarClient();
       const response = await calendar.events.list({
         calendarId: 'primary',
@@ -39,24 +34,16 @@ export class GoogleCalendar {
         orderBy: 'startTime',
       });
 
-      console.log('Calendar events fetched successfully', {
-        count: response.result.items?.length || 0,
-      });
-
       const events = response.result.items;
 
       if (!events || events.length === 0) {
-        console.log('No upcoming events found.');
         return [];
       }
 
       return events.map((event: any) => this.mapEventToCalendarEvent(event));
     } catch (error: any) {
-      console.error('Error fetching Google Calendar events:', error);
-
       // Handle authentication errors specifically
       if (error?.status === 401 || error?.result?.error?.code === 401) {
-        console.error('Authentication error: Token may be invalid or expired');
         throw new Error(
           'Authentication failed. Please sign out and sign in again. Error: ' +
             (error?.result?.error?.message || error?.message || 'Unknown error')
@@ -67,7 +54,6 @@ export class GoogleCalendar {
       if (error?.status === 403 || error?.result?.error?.code === 403) {
         const errorMessage = error?.result?.error?.message || '';
         if (errorMessage.includes('insufficient') || errorMessage.includes('scope')) {
-          console.error('Scope error: Token missing required permissions');
           throw new Error(
             '⚠️  Calendar access permission is missing. Please sign out and sign in again to grant full access.'
           );
@@ -89,7 +75,6 @@ export class GoogleCalendar {
       const response = await calendar.calendarList.list();
       return response.result.items || [];
     } catch (error) {
-      console.error('Error fetching calendar list:', error);
       throw error;
     }
   }
@@ -146,7 +131,6 @@ export class GoogleCalendar {
       const events = response.result.items;
       return events ? events.map((event: any) => this.mapEventToCalendarEvent(event)) : [];
     } catch (error) {
-      console.error(`Error fetching events from calendar ${calendarId}:`, error);
       throw error;
     }
   }
@@ -155,31 +139,19 @@ export class GoogleCalendar {
    * Ensure user is authenticated before making API calls
    */
   private async ensureAuthenticated(): Promise<void> {
-    console.log('=== Authentication Check ===');
-
     await this.auth.ensureInitialized();
-    console.log('✓ Auth initialized');
 
     if (!this.auth.isSignedIn()) {
-      console.error('✗ User not signed in');
       throw new Error('User is not signed in to Google Calendar. Please sign in first.');
     }
-    console.log('✓ User is signed in');
 
     // Refresh token if expired
     await this.auth.refreshTokenIfNeeded();
 
     // Verify token is present and valid
     const token = this.auth.getToken();
-    console.log('Token check:', {
-      exists: !!token,
-      hasAccessToken: !!token?.access_token,
-      tokenLength: token?.access_token?.length || 0,
-      scopes: token?.scope,
-    });
 
     if (!token || !token.access_token) {
-      console.error('✗ No valid access token');
       throw new Error('No valid access token available. Please sign in again.');
     }
 
@@ -190,25 +162,15 @@ export class GoogleCalendar {
     );
 
     if (!hasCalendarScope) {
-      console.warn('⚠️  Token missing required calendar scopes');
-      console.log('Current scopes:', token.scope);
-      console.log('🔄 Attempting to request calendar permissions...');
-
       try {
         // Request additional scopes without signing out
         await this.auth.requestAdditionalScopes();
-        console.log('✓ Calendar permissions granted');
       } catch (error) {
-        console.error('Failed to request calendar permissions:', error);
         throw new Error(
           '⚠️  Calendar access permission is required. Please sign out and sign in again to grant calendar access.'
         );
       }
     }
-
-    console.log('✓ Authentication verified, token present');
-    console.log('Token info:', this.auth.getTokenInfo());
-    console.log('===========================');
   }
 
   /**

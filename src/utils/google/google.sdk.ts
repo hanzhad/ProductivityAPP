@@ -132,8 +132,6 @@ export class GoogleSDK {
     this.gisLoaded = false;
     this.gapiInitialized = false;
     this.initPromise = null;
-
-    console.log('Google SDK cleaned up');
   }
 
   /**
@@ -155,8 +153,6 @@ export class GoogleSDK {
     } else {
       await initPromise;
     }
-
-    console.log('Google SDK initialized successfully');
   }
 
   /**
@@ -206,10 +202,8 @@ export class GoogleSDK {
           await window.gapi.client.load('calendar', 'v3');
 
           this.gapiInitialized = true;
-          console.log('GAPI client initialized with Calendar API');
           resolve();
         } catch (error) {
-          console.error('Error initializing gapi client:', error);
           reject(error);
         }
       });
@@ -230,14 +224,12 @@ export class GoogleSDK {
 
     if (existingScript && window.google?.accounts?.oauth2) {
       this.gisLoaded = true;
-      console.log('GIS already loaded');
       return;
     }
 
     // Load the script
     await this.loadScript(GoogleSDK.GIS_SCRIPT_URL, 'gis');
     this.gisLoaded = true;
-    console.log('GIS script loaded');
   }
 
   /**
@@ -251,13 +243,11 @@ export class GoogleSDK {
       script.defer = true;
 
       script.onload = () => {
-        console.log(`${name} script loaded successfully`);
         resolve();
       };
 
       script.onerror = (error) => {
         const errorMessage = `Failed to load ${name} script from ${src}`;
-        console.error(errorMessage, error);
         reject(new Error(errorMessage));
       };
 

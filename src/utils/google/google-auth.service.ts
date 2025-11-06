@@ -36,8 +36,6 @@ export class GoogleAuth {
     if (!this.sdk.isGapiLoaded()) {
       throw new Error('GAPI client not loaded');
     }
-
-    console.log('Google Auth initialized');
   }
 
   /**
@@ -102,17 +100,9 @@ export class GoogleAuth {
 
         this.tokenClient.callback = async (resp: any) => {
           if (resp.error !== undefined) {
-            console.error('Sign in error:', resp);
             reject(resp);
             return;
           }
-
-          console.log('OAuth response received:', {
-            access_token: resp.access_token ? 'present' : 'missing',
-            token_type: resp.token_type,
-            scope: resp.scope,
-            expires_in: resp.expires_in,
-          });
 
           // CRITICAL: Set the token on the gapi client and save to localStorage
           // This is what makes the Calendar API calls authenticated
@@ -123,7 +113,6 @@ export class GoogleAuth {
 
               // Set token on gapi client
               const token = this.setToken(resp);
-              console.log('✓ Token successfully set on gapi client');
 
               // Save token to localStorage for persistence
               TokenStorage.saveToken(token);
@@ -131,18 +120,14 @@ export class GoogleAuth {
               // Verify token is accessible
               const verifyToken = this.getToken();
               if (verifyToken && verifyToken.access_token) {
-                console.log('✓ Token verified in gapi client');
                 resolve();
               } else {
-                console.error('✗ Token verification failed');
                 reject(new Error('Failed to set token on gapi client'));
               }
             } catch (error) {
-              console.error('✗ Error setting token:', error);
               reject(error);
             }
           } else {
-            console.error('✗ No access token in response');
             reject(new Error('No access token received'));
           }
         };
@@ -150,15 +135,12 @@ export class GoogleAuth {
         const token = this.getToken();
         if (token === null) {
           // Prompt the user to select a Google Account and ask for consent
-          console.log('Requesting new access token...');
           this.tokenClient.requestAccessToken({ prompt: 'consent' });
         } else {
           // Skip display of account chooser and consent dialog
-          console.log('Refreshing existing access token...');
           this.tokenClient.requestAccessToken({ prompt: '' });
         }
       } catch (error) {
-        console.error('Error during sign in:', error);
         reject(error);
       }
     });
@@ -178,13 +160,6 @@ export class GoogleAuth {
     const now = Date.now();
     const isExpired = expiresAt <= now + 60000; // 60 seconds buffer
 
-    if (isExpired) {
-      console.log('Token expired:', {
-        expires_at: new Date(expiresAt).toISOString(),
-        now: new Date(now).toISOString(),
-      });
-    }
-
     return isExpired;
   }
 
@@ -193,10 +168,7 @@ export class GoogleAuth {
    */
   public async refreshTokenIfNeeded(): Promise<void> {
     if (this.isTokenExpired()) {
-      console.log('⟳ Token expired, refreshing...');
       await this.signIn();
-    } else {
-      console.log('✓ Token still valid');
     }
   }
 
@@ -241,7 +213,6 @@ export class GoogleAuth {
    */
   public signOut(): void {
     if (!this.sdk.isGisLoaded() || !this.sdk.isGapiLoaded()) {
-      console.warn('Cannot sign out: SDK not fully loaded');
       return;
     }
 
@@ -254,8 +225,6 @@ export class GoogleAuth {
 
         // Clear token from gapi client
         this.sdk.getGapiClient().setToken(null);
-
-        console.log('✓ Token revoked from Google');
       }
 
       // Clear token from localStorage
@@ -263,10 +232,7 @@ export class GoogleAuth {
 
       // Clear cached user profile
       this.clearUserProfileCache();
-
-      console.log('✓ Sign out successful');
     } catch (error) {
-      console.error('Error signing out:', error);
       // Still try to clear everything even if revocation fails
       TokenStorage.clearToken();
       this.clearUserProfileCache();
@@ -300,7 +266,6 @@ export class GoogleAuth {
    * This allows adding new permissions to an existing session
    */
   public async requestAdditionalScopes(): Promise<void> {
-    console.log('🔄 Requesting additional scopes...');
     await this.ensureInitialized();
 
     return new Promise((resolve, reject) => {
@@ -312,15 +277,9 @@ export class GoogleAuth {
 
         this.tokenClient.callback = async (resp: any) => {
           if (resp.error !== undefined) {
-            console.error('Additional scopes request error:', resp);
             reject(resp);
             return;
           }
-
-          console.log('Additional scopes granted:', {
-            scope: resp.scope,
-            expires_in: resp.expires_in,
-          });
 
           if (resp.access_token) {
             try {
@@ -328,10 +287,8 @@ export class GoogleAuth {
               const token = this.setToken(resp);
               TokenStorage.saveToken(token);
 
-              console.log('✓ Additional scopes successfully added');
               resolve();
             } catch (error) {
-              console.error('✗ Error setting updated token:', error);
               reject(error);
             }
           } else {
@@ -347,7 +304,6 @@ export class GoogleAuth {
           hint: this.getToken()?.access_token,
         });
       } catch (error) {
-        console.error('Error requesting additional scopes:', error);
         reject(error);
       }
     });
@@ -363,7 +319,6 @@ export class GoogleAuth {
 
     // Return cached profile if available
     if (this.cachedUserProfile) {
-      console.log('Returning cached user profile');
       return this.cachedUserProfile;
     }
 
@@ -371,21 +326,12 @@ export class GoogleAuth {
       // Get the access token
       const token = this.getToken();
       if (!token || !token.access_token) {
-        console.error('No access token available. Token state:', {
-          hasToken: !!token,
-          hasAccessToken: !!token?.access_token,
-          tokenInfo: this.getTokenInfo(),
-        });
         throw new Error('No access token available. Please sign in again.');
       }
-
-      console.log('Fetching user profile with token scopes:', token.scope);
 
       // Check if token has required scopes
       const requiredScopes = ['userinfo.profile', 'userinfo.email'];
       if (!this.hasRequiredScopes(requiredScopes)) {
-        console.warn('Token missing required scopes. Current scopes:', token.scope);
-        console.warn('⚠️  Please sign out and sign in again to grant user profile permissions.');
         throw new Error(
           '⚠️  Your session needs to be refreshed. Please sign out and sign in again to access your profile.'
         );
@@ -400,12 +346,6 @@ export class GoogleAuth {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error('Profile fetch error:', {
-          status: response.status,
-          statusText: response.statusText,
-          error: errorData,
-          tokenScopes: token.scope,
-        });
 
         if (response.status === 401) {
           throw new Error(
