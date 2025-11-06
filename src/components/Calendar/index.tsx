@@ -51,7 +51,7 @@ const Calendar: Component = () => {
   };
 
   return (
-    <div class="max-w-7xl px-4">
+    <div class="max-w-7xl">
       <CalendarView />
     </div>
   );
