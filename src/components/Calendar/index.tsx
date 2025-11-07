@@ -1,7 +1,7 @@
 import { Component, createEffect, onCleanup, onMount } from 'solid-js';
 import { useI18n } from '../../utils/i18n';
 import { useCalendarStore } from '../../stores';
-import googleService from '../../utils/google/google.service';
+import { calendarService } from '../../services/calendar.service.factory';
 import CalendarView from './type';
 
 const Calendar: Component = () => {
@@ -40,11 +40,28 @@ const Calendar: Component = () => {
       const startOfMonth = new Date(current.getFullYear(), current.getMonth(), 1);
       const endOfMonth = new Date(current.getFullYear(), current.getMonth() + 1, 0);
 
-      const calendarEvents = await googleService.fetchEvents(startOfMonth, endOfMonth);
-      setEvents(calendarEvents);
+      // Initialize calendar service if not already done
+      if (calendarService.isAvailable()) {
+        try {
+          await calendarService.initialize();
+          const calendarEvents = await calendarService.fetchEvents(startOfMonth, endOfMonth);
+          setEvents(calendarEvents);
+        } catch (err: any) {
+          // If permission is denied or initialization fails, just show empty calendar
+          console.warn('Calendar not accessible:', err?.message || err);
+          setEvents([]);
+          // Don't set error - let the calendar show as empty
+        }
+      } else {
+        console.log('Calendar service not available on this platform');
+        setEvents([]);
+      }
     } catch (err: any) {
       console.error('Error loading events:', err?.message || err?.code || err);
-      setError(t('errors.loadingEvents'));
+      // Only set error for unexpected errors
+      if (err?.message && !err.message.includes('permission')) {
+        setError(t('errors.loadingEvents'));
+      }
     } finally {
       setLoading(false);
     }

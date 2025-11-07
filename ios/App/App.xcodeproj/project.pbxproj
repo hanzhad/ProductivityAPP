@@ -17,6 +17,8 @@
 		A084ECDBA7D38E1E42DFC39D /* Pods_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */; };
 		CF30DB742EBD52AD0092DB35 /* AppleRemindersPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF30DB732EBD52AD0092DB35 /* AppleRemindersPlugin.swift */; };
 		CF30DB752EBD52AD0092DB35 /* AppleRemindersPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = CF30DB722EBD52AD0092DB35 /* AppleRemindersPlugin.m */; };
+		CF30DB7E2EBD64640092DB35 /* AppleCalendarPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = CF30DB7C2EBD64640092DB35 /* AppleCalendarPlugin.m */; };
+		CF30DB7F2EBD64640092DB35 /* AppleCalendarPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF30DB7D2EBD64640092DB35 /* AppleCalendarPlugin.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -33,6 +35,8 @@
 		AF51FD2D460BCFE21FA515B2 /* Pods-App.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.release.xcconfig"; path = "Pods/Target Support Files/Pods-App/Pods-App.release.xcconfig"; sourceTree = "<group>"; };
 		CF30DB722EBD52AD0092DB35 /* AppleRemindersPlugin.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppleRemindersPlugin.m; sourceTree = "<group>"; };
 		CF30DB732EBD52AD0092DB35 /* AppleRemindersPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleRemindersPlugin.swift; sourceTree = "<group>"; };
+		CF30DB7C2EBD64640092DB35 /* AppleCalendarPlugin.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppleCalendarPlugin.m; sourceTree = "<group>"; };
+		CF30DB7D2EBD64640092DB35 /* AppleCalendarPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleCalendarPlugin.swift; sourceTree = "<group>"; };
 		FC68EB0AF532CFC21C3344DD /* Pods-App.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.debug.xcconfig"; path = "Pods/Target Support Files/Pods-App/Pods-App.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -77,6 +81,8 @@
 		504EC3061FED79650016851F /* App */ = {
 			isa = PBXGroup;
 			children = (
+				CF30DB7C2EBD64640092DB35 /* AppleCalendarPlugin.m */,
+				CF30DB7D2EBD64640092DB35 /* AppleCalendarPlugin.swift */,
 				CF30DB722EBD52AD0092DB35 /* AppleRemindersPlugin.m */,
 				CF30DB732EBD52AD0092DB35 /* AppleRemindersPlugin.swift */,
 				50379B222058CBB4000EE86E /* capacitor.config.json */,
@@ -215,6 +221,8 @@
 			files = (
 				CF30DB742EBD52AD0092DB35 /* AppleRemindersPlugin.swift in Sources */,
 				CF30DB752EBD52AD0092DB35 /* AppleRemindersPlugin.m in Sources */,
+				CF30DB7E2EBD64640092DB35 /* AppleCalendarPlugin.m in Sources */,
+				CF30DB7F2EBD64640092DB35 /* AppleCalendarPlugin.swift in Sources */,
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -356,6 +364,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = AVY98JNMGH;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -378,6 +387,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = AVY98JNMGH;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";

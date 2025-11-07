@@ -1,5 +1,6 @@
 import { Component, createSignal, onMount, Show } from 'solid-js';
 import { Button } from '@kobalte/core/button';
+import { Capacitor } from '@capacitor/core';
 import { useAuthStore } from '../stores/authStore';
 import { useI18n } from '../utils/i18n';
 import googleService from '../utils/google/google.service';
@@ -11,7 +12,15 @@ const GoogleAuthButton: Component = () => {
   const [error, setError] = createSignal<string>('');
   const [isInitialized, setIsInitialized] = createSignal(false);
 
+  // Hide Google Auth on iOS - use Apple services instead
+  const isIOS = Capacitor.getPlatform() === 'ios';
+
   onMount(async () => {
+    // Skip initialization on iOS
+    if (isIOS) {
+      return;
+    }
+
     try {
       setLoading(true);
       await googleService.initialize();
@@ -49,6 +58,11 @@ const GoogleAuthButton: Component = () => {
       setLoading(false);
     }
   };
+
+  // Don't render anything on iOS
+  if (isIOS) {
+    return null;
+  }
 
   return (
     <div class="mb-6">
