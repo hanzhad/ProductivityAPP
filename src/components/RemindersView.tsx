@@ -18,7 +18,6 @@ const RemindersView: Component = () => {
     // Listen for app state changes to resync tasks when app resumes
     appStateListener = await App.addListener('appStateChange', async (state) => {
       if (state.isActive) {
-        console.log('App resumed, resyncing tasks/reminders...');
         await loadTasks(true); // Silent reload to avoid showing loading spinner
       }
     });

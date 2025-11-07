@@ -366,11 +366,6 @@ export class GoogleAuth {
         email: userInfo.email || '',
         imageUrl: userInfo.picture || '',
       };
-
-      console.log('User profile fetched and cached:', {
-        name: this.cachedUserProfile.name,
-        email: this.cachedUserProfile.email,
-      });
       return this.cachedUserProfile;
     } catch (error) {
       console.error('Error fetching user profile:', error);
@@ -386,13 +381,13 @@ export class GoogleAuth {
     const storedToken = TokenStorage.loadToken();
 
     if (!storedToken) {
-      console.log('No stored token to restore');
+      console.warn('No stored token to restore');
       this.clearUserProfileCache();
       return;
     }
 
     if (!TokenStorage.isTokenValid(storedToken)) {
-      console.log('Stored token is invalid or expired, clearing');
+      console.warn('Stored token is invalid or expired, clearing');
       TokenStorage.clearToken();
       this.clearUserProfileCache();
       return;
@@ -405,9 +400,9 @@ export class GoogleAuth {
     const hasMinimumScopes = requiredScopes.some((scope) => tokenScope.includes(scope));
 
     if (!hasMinimumScopes) {
-      console.log('⚠️  Stored token has incompatible scopes, clearing for re-authentication');
-      console.log('   Old scopes:', storedToken.scope);
-      console.log('   This is a one-time migration - please sign in again');
+      console.warn('⚠️  Stored token has incompatible scopes, clearing for re-authentication');
+      console.warn('   Old scopes:', storedToken.scope);
+      console.warn('   This is a one-time migration - please sign in again');
       TokenStorage.clearToken();
       this.clearUserProfileCache();
       return;

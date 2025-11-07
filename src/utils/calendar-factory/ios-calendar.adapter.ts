@@ -23,7 +23,7 @@ export class IosCalendarAdapter implements ICalendarService {
     try {
       const hasPermission = await appleCalendarService.checkPermissions();
       if (!hasPermission) {
-        console.log('Calendar permission not granted, requesting...');
+        console.warn('Calendar permission not granted, requesting...');
         const granted = await appleCalendarService.requestPermissions();
         if (!granted) {
           console.warn('Calendar permission denied by user');
@@ -34,7 +34,6 @@ export class IosCalendarAdapter implements ICalendarService {
       }
 
       this.initialized = true;
-      console.log('iOS Calendar initialized successfully');
     } catch (error) {
       console.error('Error initializing iOS Calendar:', error);
       this.initialized = false;
@@ -49,7 +48,7 @@ export class IosCalendarAdapter implements ICalendarService {
 
     // If still not initialized after initialization attempt, return empty array
     if (!this.initialized) {
-      console.log('iOS Calendar not available - permission denied or initialization failed');
+      console.error('iOS Calendar not available - permission denied or initialization failed');
       return [];
     }
 

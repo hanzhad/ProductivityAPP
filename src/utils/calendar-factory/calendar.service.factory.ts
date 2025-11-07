@@ -20,8 +20,6 @@ class CalendarServiceFactory {
 
     const platform = Capacitor.getPlatform();
 
-    console.log(`Creating calendar service for platform: ${platform}`);
-
     if (platform === 'ios') {
       this.instance = new IosCalendarAdapter();
     } else {

@@ -97,12 +97,10 @@ class PlatformTimerManager {
     }
 
     timer.intervalId = setInterval(() => {
-      console.log(`[PlatformTimer] Executing callback for timer ${timer.id}`);
       timer.callback();
     }, timer.interval) as unknown as number;
 
     timer.isRunning = true;
-    console.log(`[PlatformTimer] Started timer ${timer.id} (iOS: ${this.isIOS})`);
   }
 
   private stopTimer(timer: Timer): void {
@@ -113,20 +111,17 @@ class PlatformTimerManager {
     clearInterval(timer.intervalId);
     timer.intervalId = null;
     timer.isRunning = false;
-    console.log(`[PlatformTimer] Stopped timer ${timer.id}`);
   }
 
   private setupIOSListeners(timer: Timer): void {
     // App state listener - handle app going to background/foreground
     App.addListener('appStateChange', ({ isActive }) => {
-      console.log(`[PlatformTimer] App state changed: ${isActive ? 'active' : 'background'}`);
       if (isActive) {
         // App came to foreground - ensure timer is running and execute callback as catch-up
         if (!timer.isRunning) {
           this.startTimer(timer);
         }
         // Execute callback immediately on resume to catch up on any missed updates
-        console.log('[PlatformTimer] App resumed, executing catch-up callback');
         timer.callback();
       }
       // Note: We DON'T stop the timer when going to background
@@ -137,13 +132,11 @@ class PlatformTimerManager {
 
     // Page visibility listener - handle screen lock/unlock
     const handleVisibilityChange = () => {
-      console.log(`[PlatformTimer] Visibility changed: ${document.hidden ? 'hidden' : 'visible'}`);
       if (!document.hidden) {
         // Page became visible - ensure timer is running and do a catch-up
         if (!timer.isRunning) {
           this.startTimer(timer);
         }
-        console.log('[PlatformTimer] Page visible, executing catch-up callback');
         timer.callback();
       }
       // Note: We DON'T stop the timer when page is hidden

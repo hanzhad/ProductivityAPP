@@ -178,7 +178,6 @@ export const useTasksStore = () => {
   };
 
   const loadTasks = async (silent: boolean = false) => {
-    console.log('Loading tasks... Silent: ', silent ? 'Yes' : 'No');
     try {
       if (!silent) {
         setLoading(true);
@@ -189,10 +188,8 @@ export const useTasksStore = () => {
       const { appleRemindersService } = await import('../utils/apple/apple-reminders.service');
 
       if (appleRemindersService.isIOS()) {
-        console.log('Loading tasks from Apple Reminders...');
         try {
           const tasks = await appleRemindersService.getTasks(false);
-          console.log('tasks', tasks);
           setTasks(tasks);
           return;
         } catch (error: any) {
@@ -272,7 +269,6 @@ export const useTasksStore = () => {
 
     // Set up platform-aware interval to reload tasks
     const timerId = platformTimerManager.setInterval(() => {
-      console.log('Auto-reloading tasks...');
       loadTasks(true); // Silent reload
     }, TIME_OUT);
 
@@ -280,7 +276,6 @@ export const useTasksStore = () => {
   };
 
   const stopAutoReload = () => {
-    console.log('stopAutoReload called. TasksStore:');
     if (tasksStore.autoReloadInterval !== null && tasksStore.autoReloadInterval !== undefined) {
       platformTimerManager.clearInterval(tasksStore.autoReloadInterval);
       setTasksStore('autoReloadInterval', null);

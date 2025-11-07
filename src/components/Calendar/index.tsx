@@ -28,7 +28,6 @@ const Calendar: Component = () => {
     // Listen for app state changes to resync calendar when app resumes
     appStateListener = await App.addListener('appStateChange', async (state) => {
       if (state.isActive) {
-        console.log('App resumed, resyncing calendar events...');
         await loadEvents();
       }
     });
@@ -69,7 +68,6 @@ const Calendar: Component = () => {
           // Don't set error - let the calendar show as empty
         }
       } else {
-        console.log('Calendar service not available on this platform');
         setEvents([]);
       }
     } catch (err: any) {

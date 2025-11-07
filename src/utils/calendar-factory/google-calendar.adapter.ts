@@ -37,7 +37,7 @@ export class GoogleCalendarAdapter implements ICalendarService {
 
     // Check if user is signed in
     if (!googleService.isSignedIn()) {
-      console.log('User not signed in to Google Calendar');
+      console.warn('User not signed in to Google Calendar');
       return [];
     }
 
