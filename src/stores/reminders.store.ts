@@ -1,7 +1,7 @@
 import { createStore } from 'solid-js/store';
 import { platformTimerManager } from '../utils/platform-timer.manager';
 
-const TIME_OUT = 60 * 1000;
+const TIME_OUT = 10 * 1000;
 
 export type TaskStatus = 'todo' | 'in-progress' | 'done';
 export type TaskPriority = 'low' | 'medium' | 'high';

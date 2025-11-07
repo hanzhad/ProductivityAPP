@@ -2,7 +2,7 @@ import { createStore } from 'solid-js/store';
 import { CalendarEvent } from '../types/google.type';
 import { platformTimerManager } from '../utils/platform-timer.manager';
 
-const TIME_OUT = 60 * 1000; // 60 seconds
+const TIME_OUT = 10 * 1000; // 60 seconds
 
 interface CalendarState {
   events: CalendarEvent[];
@@ -28,6 +28,7 @@ const [calendarStore, setCalendarStore] = createStore<CalendarState>({
 let timeUpdateIntervalId: string | null = null;
 let midnightTimeoutId: string | null = null;
 let resetTodayTimeoutId: string | null = null;
+let autoReloadIntervalId: string | null = null;
 
 // Helper functions
 const getMillisecondsUntilMidnight = () => {
@@ -194,6 +195,27 @@ export const useCalendarStore = () => {
     scheduleNextDayChange(onDayChange);
   };
 
+  const startAutoReload = (loadCallback: () => Promise<void>) => {
+    // Stop any existing auto-reload timer
+    stopAutoReload();
+
+    // Set up platform-aware interval to reload events periodically
+    autoReloadIntervalId = platformTimerManager.setInterval(() => {
+      console.log('Auto-reloading calendar events...');
+      loadCallback(); // Call the loadEvents function
+    }, 30 * 1000); // 30 seconds
+
+    console.log('Calendar auto-reload started');
+  };
+
+  const stopAutoReload = () => {
+    if (autoReloadIntervalId) {
+      platformTimerManager.clearInterval(autoReloadIntervalId);
+      autoReloadIntervalId = null;
+      console.log('Calendar auto-reload stopped');
+    }
+  };
+
   const cleanupTimers = () => {
     if (timeUpdateIntervalId) {
       platformTimerManager.clearInterval(timeUpdateIntervalId);
@@ -207,6 +229,8 @@ export const useCalendarStore = () => {
       platformTimerManager.clearInterval(resetTodayTimeoutId);
       resetTodayTimeoutId = null;
     }
+    // Also stop auto-reload when cleaning up all timers
+    stopAutoReload();
   };
 
   const isEventInPast = (event: CalendarEvent) => {
@@ -250,5 +274,7 @@ export const useCalendarStore = () => {
     nextMonth,
     getMonthYearText,
     reset,
+    startAutoReload,
+    stopAutoReload,
   };
 };

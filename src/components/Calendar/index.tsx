@@ -15,6 +15,7 @@ const Calendar: Component = () => {
     initializeTimers,
     cleanupTimers,
     scheduleResetToToday,
+    startAutoReload,
   } = useCalendarStore();
 
   let appStateListener: any;
@@ -24,6 +25,9 @@ const Calendar: Component = () => {
 
     // Initialize all timer jobs (updates time every minute, auto day/month change)
     initializeTimers(loadEvents);
+
+    // Start auto-reload timer for periodic event syncing
+    startAutoReload(loadEvents);
 
     // Listen for app state changes to resync calendar when app resumes
     appStateListener = await App.addListener('appStateChange', async (state) => {
@@ -81,11 +85,7 @@ const Calendar: Component = () => {
     }
   };
 
-  return (
-    <div class="">
-      <CalendarView />
-    </div>
-  );
+  return <CalendarView />;
 };
 
 export default Calendar;
