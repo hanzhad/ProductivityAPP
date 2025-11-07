@@ -1,4 +1,7 @@
 import { createStore } from 'solid-js/store';
+import { platformTimerManager } from '../utils/platform-timer.manager';
+
+const TIME_OUT = 60 * 1000;
 
 export type TaskStatus = 'todo' | 'in-progress' | 'done';
 export type TaskPriority = 'low' | 'medium' | 'high';
@@ -31,7 +34,7 @@ interface TasksState {
   sortBy: 'createdAt' | 'dueDate' | 'priority' | 'title';
   sortOrder: 'asc' | 'desc';
   viewFilter: 'all' | 'active' | 'completed';
-  autoReloadInterval: number | null;
+  autoReloadInterval: string | null;
 }
 
 const [tasksStore, setTasksStore] = createStore<TasksState>({
@@ -156,6 +159,9 @@ export const useTasksStore = () => {
   };
 
   const reset = () => {
+    // Stop auto-reload before resetting
+    stopAutoReload();
+
     setTasksStore({
       tasks: [],
       loading: false,
@@ -167,10 +173,12 @@ export const useTasksStore = () => {
       sortBy: 'createdAt',
       sortOrder: 'desc',
       viewFilter: 'all',
+      autoReloadInterval: null,
     });
   };
 
   const loadTasks = async (silent: boolean = false) => {
+    console.log('Loading tasks... Silent: ', silent ? 'Yes' : 'No');
     try {
       if (!silent) {
         setLoading(true);
@@ -178,11 +186,13 @@ export const useTasksStore = () => {
       setError('');
 
       // Try to load from Apple Reminders if on iOS
-      const { appleRemindersService } = await import('../services/appleReminders.service');
+      const { appleRemindersService } = await import('../utils/apple/apple-reminders.service');
 
       if (appleRemindersService.isIOS()) {
+        console.log('Loading tasks from Apple Reminders...');
         try {
           const tasks = await appleRemindersService.getTasks(false);
+          console.log('tasks', tasks);
           setTasks(tasks);
           return;
         } catch (error: any) {
@@ -255,22 +265,24 @@ export const useTasksStore = () => {
     stopAutoReload();
 
     // Check if we're on iOS before starting auto-reload
-    const { appleRemindersService } = await import('../services/appleReminders.service');
+    const { appleRemindersService } = await import('../utils/apple/apple-reminders.service');
     if (!appleRemindersService.isIOS()) {
       return;
     }
 
-    // Set up interval to reload tasks every 60 seconds
-    const intervalId = window.setInterval(() => {
+    // Set up platform-aware interval to reload tasks
+    const timerId = platformTimerManager.setInterval(() => {
+      console.log('Auto-reloading tasks...');
       loadTasks(true); // Silent reload
-    }, 60000); // 60 seconds
+    }, TIME_OUT);
 
-    setTasksStore('autoReloadInterval', intervalId);
+    setTasksStore('autoReloadInterval', timerId);
   };
 
   const stopAutoReload = () => {
-    if (tasksStore.autoReloadInterval !== null) {
-      window.clearInterval(tasksStore.autoReloadInterval);
+    console.log('stopAutoReload called. TasksStore:');
+    if (tasksStore.autoReloadInterval !== null && tasksStore.autoReloadInterval !== undefined) {
+      platformTimerManager.clearInterval(tasksStore.autoReloadInterval);
       setTasksStore('autoReloadInterval', null);
     }
   };

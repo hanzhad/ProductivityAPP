@@ -1,13 +1,13 @@
 import { Capacitor } from '@capacitor/core';
-import { ICalendarService } from './calendar.service.interface';
-import { CalendarEvent } from '../types/google.type';
-import { appleCalendarService } from './appleCalendar.service';
+import { ICalendarService } from '../apple/calendar.service.interface';
+import { CalendarEvent } from '../../types/google.type';
+import { appleCalendarService } from '../apple/apple-calendar.service';
 
 /**
  * iOS Calendar Service
  * Uses Apple's EventKit to access calendar events
  */
-export class IOSCalendarService implements ICalendarService {
+export class IosCalendarAdapter implements ICalendarService {
   private initialized = false;
 
   isAvailable(): boolean {

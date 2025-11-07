@@ -1,7 +1,7 @@
 import { Capacitor } from '@capacitor/core';
-import { ICalendarService } from './calendar.service.interface';
-import { IOSCalendarService } from './iosCalendar.service';
-import { GoogleCalendarService } from './googleCalendar.service';
+import { ICalendarService } from '../apple/calendar.service.interface';
+import { IosCalendarAdapter } from './ios-calendar.adapter';
+import { GoogleCalendarAdapter } from './google-calendar.adapter';
 
 /**
  * Calendar Service Factory
@@ -23,10 +23,10 @@ class CalendarServiceFactory {
     console.log(`Creating calendar service for platform: ${platform}`);
 
     if (platform === 'ios') {
-      this.instance = new IOSCalendarService();
+      this.instance = new IosCalendarAdapter();
     } else {
       // Default to Google Calendar for web and Android
-      this.instance = new GoogleCalendarService();
+      this.instance = new GoogleCalendarAdapter();
     }
 
     return this.instance;

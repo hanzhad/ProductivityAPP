@@ -1,7 +1,8 @@
 import { Component, createEffect, onCleanup, onMount } from 'solid-js';
+import { App } from '@capacitor/app';
 import { useI18n } from '../../utils/i18n';
 import { useCalendarStore } from '../../stores';
-import { calendarService } from '../../services/calendar.service.factory';
+import { calendarService } from '../../utils/calendar-factory/calendar.service.factory';
 import CalendarView from './type';
 
 const Calendar: Component = () => {
@@ -16,20 +17,35 @@ const Calendar: Component = () => {
     scheduleResetToToday,
   } = useCalendarStore();
 
+  let appStateListener: any;
+
   onMount(async () => {
     await loadEvents();
 
     // Initialize all timer jobs (updates time every minute, auto day/month change)
     initializeTimers(loadEvents);
+
+    // Listen for app state changes to resync calendar when app resumes
+    appStateListener = await App.addListener('appStateChange', async (state) => {
+      if (state.isActive) {
+        console.log('App resumed, resyncing calendar events...');
+        await loadEvents();
+      }
+    });
   });
 
   onCleanup(() => {
     cleanupTimers();
+    if (appStateListener) {
+      appStateListener.remove();
+    }
   });
 
   // Reset to today after 60 seconds when a different day is selected
   createEffect(() => {
-    scheduleResetToToday();
+    // Track selectedDate as dependency
+    const selected = store.selectedDate;
+    scheduleResetToToday(selected);
   });
 
   const loadEvents = async () => {

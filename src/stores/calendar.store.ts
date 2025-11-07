@@ -1,5 +1,8 @@
 import { createStore } from 'solid-js/store';
 import { CalendarEvent } from '../types/google.type';
+import { platformTimerManager } from '../utils/platform-timer.manager';
+
+const TIME_OUT = 60 * 1000; // 60 seconds
 
 interface CalendarState {
   events: CalendarEvent[];
@@ -22,9 +25,9 @@ const [calendarStore, setCalendarStore] = createStore<CalendarState>({
 });
 
 // Timer IDs
-let timeUpdateIntervalId: number | undefined;
-let midnightTimeoutId: number | undefined;
-let resetTodayTimeoutId: number | undefined;
+let timeUpdateIntervalId: string | null = null;
+let midnightTimeoutId: string | null = null;
+let resetTodayTimeoutId: string | null = null;
 
 // Helper functions
 const getMillisecondsUntilMidnight = () => {
@@ -121,12 +124,14 @@ export const useCalendarStore = () => {
 
   const scheduleNextDayChange = (onDayChange?: () => void) => {
     if (midnightTimeoutId) {
-      clearTimeout(midnightTimeoutId);
+      platformTimerManager.clearInterval(midnightTimeoutId);
+      midnightTimeoutId = null;
     }
 
     const msUntilMidnight = getMillisecondsUntilMidnight();
 
-    midnightTimeoutId = setTimeout(() => {
+    // Use a one-time interval that reschedules itself
+    midnightTimeoutId = platformTimerManager.setInterval(() => {
       const today = new Date();
       const wasLastDay = isLastDayOfMonth(new Date(today.getTime() - 1000)); // Check yesterday
 
@@ -145,32 +150,45 @@ export const useCalendarStore = () => {
         onDayChange();
       }
 
-      // Schedule the next day change
+      // Clear this timer and schedule the next day change
+      if (midnightTimeoutId) {
+        platformTimerManager.clearInterval(midnightTimeoutId);
+        midnightTimeoutId = null;
+      }
       scheduleNextDayChange(onDayChange);
-    }, msUntilMidnight) as unknown as number;
+    }, msUntilMidnight);
   };
 
-  const scheduleResetToToday = () => {
+  const scheduleResetToToday = (selectedDate?: Date) => {
+    // Clear any existing timeout
     if (resetTodayTimeoutId) {
-      clearTimeout(resetTodayTimeoutId);
+      platformTimerManager.clearInterval(resetTodayTimeoutId);
+      resetTodayTimeoutId = null;
     }
 
-    const selected = calendarStore.selectedDate;
+    const selected = selectedDate || calendarStore.selectedDate;
     const today = new Date();
 
+    // Only schedule reset if a different day is selected
     if (!isSameDay(selected, today)) {
-      resetTodayTimeoutId = setTimeout(() => {
+      resetTodayTimeoutId = platformTimerManager.setInterval(() => {
         setSelectedDate(new Date());
-        resetTodayTimeoutId = undefined;
-      }, 60000) as unknown as number; // 60 seconds
+        if (resetTodayTimeoutId) {
+          platformTimerManager.clearInterval(resetTodayTimeoutId);
+          resetTodayTimeoutId = null;
+        }
+      }, TIME_OUT); // 60 seconds
     }
   };
 
   const initializeTimers = (onDayChange?: () => void) => {
+    // Clear any existing timers first
+    cleanupTimers();
+
     // Job that runs every minute to update current time and check for past events
-    timeUpdateIntervalId = setInterval(() => {
+    timeUpdateIntervalId = platformTimerManager.setInterval(() => {
       setCurrentTime(new Date());
-    }, 60000) as unknown as number; // 60 seconds
+    }, TIME_OUT); // 60 seconds
 
     // Schedule automatic day change at midnight
     scheduleNextDayChange(onDayChange);
@@ -178,16 +196,16 @@ export const useCalendarStore = () => {
 
   const cleanupTimers = () => {
     if (timeUpdateIntervalId) {
-      clearInterval(timeUpdateIntervalId);
-      timeUpdateIntervalId = undefined;
+      platformTimerManager.clearInterval(timeUpdateIntervalId);
+      timeUpdateIntervalId = null;
     }
     if (midnightTimeoutId) {
-      clearTimeout(midnightTimeoutId);
-      midnightTimeoutId = undefined;
+      platformTimerManager.clearInterval(midnightTimeoutId);
+      midnightTimeoutId = null;
     }
     if (resetTodayTimeoutId) {
-      clearTimeout(resetTodayTimeoutId);
-      resetTodayTimeoutId = undefined;
+      platformTimerManager.clearInterval(resetTodayTimeoutId);
+      resetTodayTimeoutId = null;
     }
   };
 

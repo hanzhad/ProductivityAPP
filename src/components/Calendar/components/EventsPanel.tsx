@@ -88,7 +88,7 @@ const EventsPanel: Component<TEvent> = (props) => {
         </Show>
 
         <Show when={!store.loading && selectedDayEvents().length === 0}>
-          <p class="text-gray-500 dark:text-gray-400 text-sm">No events scheduled</p>
+          <p class="text-gray-500 dark:text-gray-400 text-sm">{t('calendar.noEventsScheduled')}</p>
         </Show>
 
         <Show when={!store.loading}>

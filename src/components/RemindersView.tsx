@@ -1,13 +1,36 @@
-import { Component, For, onMount, Show } from 'solid-js';
+import { Component, For, onCleanup, onMount, Show } from 'solid-js';
+import { App } from '@capacitor/app';
 import { getLocaleDateFormat, useI18n } from '../utils/i18n';
 import { TaskPriority, useTasksStore } from '../stores';
 
-const TasksView: Component = () => {
+const RemindersView: Component = () => {
   const { t, locale } = useI18n();
-  const { store, loadTasks } = useTasksStore();
+  const { store, loadTasks, stopAutoReload, startAutoReload } = useTasksStore();
+
+  let appStateListener: any;
 
   onMount(async () => {
     await loadTasks();
+
+    // Start auto-reload timer (will only work on iOS)
+    await startAutoReload();
+
+    // Listen for app state changes to resync tasks when app resumes
+    appStateListener = await App.addListener('appStateChange', async (state) => {
+      if (state.isActive) {
+        console.log('App resumed, resyncing tasks/reminders...');
+        await loadTasks(true); // Silent reload to avoid showing loading spinner
+      }
+    });
+  });
+
+  onCleanup(() => {
+    // Clean up app state listener
+    if (appStateListener) {
+      appStateListener.remove();
+    }
+    // Clean up any auto-reload intervals
+    stopAutoReload();
   });
 
   const formatDate = (dateString: string) => {
@@ -111,4 +134,4 @@ const TasksView: Component = () => {
   );
 };
 
-export default TasksView;
+export default RemindersView;

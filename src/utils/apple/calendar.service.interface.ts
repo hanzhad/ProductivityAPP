@@ -1,4 +1,4 @@
-import { CalendarEvent } from '../types/google.type';
+import { CalendarEvent } from '../../types/google.type';
 
 /**
  * Unified calendar service interface

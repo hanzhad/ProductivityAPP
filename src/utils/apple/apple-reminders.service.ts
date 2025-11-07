@@ -1,6 +1,6 @@
 import { Capacitor, registerPlugin } from '@capacitor/core';
-import { AppleReminder, AppleRemindersPlugin } from '../types/apple-reminders.type';
-import { Task, TaskPriority } from '../stores/tasks.store';
+import { AppleReminder, AppleRemindersPlugin } from '../../types/apple-reminders.type';
+import { Task, TaskPriority } from '../../stores';
 
 const AppleReminders = registerPlugin<AppleRemindersPlugin>('AppleReminders', {
   web: () => ({

@@ -80,24 +80,6 @@ export class GoogleCalendar {
     }
   }
 
-  // /**
-  //  * Get user's primary calendar email
-  //  */
-  // public async getUserEmail(): Promise<string> {
-  //   await this.ensureAuthenticated();
-  //
-  //   try {
-  //     const calendar = this.getCalendarClient();
-  //     const response = await calendar.calendarList.get({
-  //       calendarId: 'primary',
-  //     });
-  //     return response.result.id;
-  //   } catch (error) {
-  //     console.error('Error getting user email:', error);
-  //     return '';
-  //   }
-  // }
-
   /**
    * Fetch events from a specific calendar
    * @param calendarId - The ID of the calendar to fetch events from

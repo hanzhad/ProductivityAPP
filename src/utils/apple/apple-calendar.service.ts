@@ -3,7 +3,7 @@ import {
   AppleCalendarEvent,
   AppleCalendarInfo,
   AppleCalendarPlugin,
-} from '../types/apple-calendar.type';
+} from '../../types/apple-calendar.type';
 
 const AppleCalendar = registerPlugin<AppleCalendarPlugin>('AppleCalendar', {
   web: () => ({
