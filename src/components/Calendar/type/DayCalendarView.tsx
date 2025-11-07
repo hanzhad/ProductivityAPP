@@ -22,8 +22,8 @@ const DayCalendarView: Component = () => {
         <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">{currentMonthYear()}</h3>
       </div>
 
-      <div class="h-[calc(100vh-16px-44px-8px)]">
-        <EventsPanel />
+      <div>
+        <EventsPanel class="max-h-[calc(100vh-16px-44px-8px-44px-16px-8px)] h-full overflow-y-auto" />
       </div>
     </div>
   );

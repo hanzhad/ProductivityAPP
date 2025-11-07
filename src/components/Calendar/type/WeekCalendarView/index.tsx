@@ -28,8 +28,8 @@ const WeekCalendarView: Component = () => {
           </h3>
         </div>
 
-        <div class="max-h-[calc(100vh-16px-44px-8px)] h-full">
-          <EventsPanel />
+        <div>
+          <EventsPanel class="max-h-[calc(100vh-16px-44px-8px-44px-16px-8px)] h-full overflow-y-auto" />
         </div>
       </div>
     </div>

@@ -65,7 +65,7 @@ const areEventsEqual = (events1: CalendarEvent[], events2: CalendarEvent[]) => {
       event.startDate === otherEvent.startDate &&
       event.endDate === otherEvent.endDate &&
       event.location === otherEvent.location &&
-      event.description === otherEvent.description
+      event.notes === otherEvent.notes
     );
   });
 };
@@ -255,6 +255,18 @@ export const useCalendarStore = () => {
 
   const isEventInPast = (event: CalendarEvent) => {
     const now = calendarStore.currentTime;
+
+    // For all-day events, only mark as past if the entire day has passed
+    if (event.isAllDay) {
+      const eventDate = new Date(event.startDate);
+      const today = new Date(now);
+      // Set both dates to midnight for day-only comparison
+      eventDate.setHours(0, 0, 0, 0);
+      today.setHours(0, 0, 0, 0);
+      return eventDate < today;
+    }
+
+    // For timed events, use the end time
     const eventEndDate = event.endDate ? new Date(event.endDate) : new Date(event.startDate);
     return eventEndDate < now;
   };

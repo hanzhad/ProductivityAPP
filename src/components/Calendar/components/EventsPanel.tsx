@@ -1,10 +1,12 @@
-import { formatTime, isSameDay } from '../utils';
+import { formatEventTime, isSameDay } from '../utils';
 import { Component, createEffect, createMemo, For, Show } from 'solid-js';
 import { getLocaleDateFormat, useI18n } from '../../../utils/i18n';
 import { useCalendarStore } from '../../../stores';
+import cn from 'classnames';
 
 type TEvent = {
   roundedFull?: boolean;
+  class?: string;
 };
 
 const EventsPanel: Component<TEvent> = (props) => {
@@ -12,8 +14,14 @@ const EventsPanel: Component<TEvent> = (props) => {
 
   const { store, isEventInPast } = useCalendarStore();
 
+  const isSameDayMemo = createMemo(() => {
+    const today = store.currentDate;
+    const selected = store.selectedDate;
+    return isSameDay(today, selected);
+  });
+
   const todayFormatted = createMemo(() => {
-    const today = new Date();
+    const today = store.currentDate;
     return today.toLocaleDateString(getLocaleDateFormat(locale()), {
       weekday: 'short',
       month: 'short',
@@ -39,22 +47,25 @@ const EventsPanel: Component<TEvent> = (props) => {
 
   const nextUpcomingEvent = createMemo(() => {
     const events = selectedDayEvents();
-    const now = store.currentTime;
 
-    // Find the first event that hasn't ended yet
-    const upcoming = events.find((event) => {
-      const eventEndDate = event.endDate ? new Date(event.endDate) : new Date(event.startDate);
-      return eventEndDate >= now;
+    // Find the first event that hasn't ended yet (is not in the past)
+    return events.find((event) => {
+      if (!isSameDayMemo()) {
+        return false;
+      }
+
+      if (event.isAllDay) {
+        return false;
+      }
+      return !isEventInPast(event);
     });
-
-    return upcoming;
   });
 
   // Auto-scroll to next upcoming event when current event becomes past
   createEffect(() => {
     const nextEvent = nextUpcomingEvent();
 
-    if (nextEvent && isSameDay(store.selectedDate, new Date())) {
+    if (nextEvent && isSameDayMemo()) {
       // Only auto-scroll on today's events
       const eventElement = document.querySelector(`[data-event-id="${nextEvent.id}"]`);
       if (eventElement) {
@@ -69,9 +80,7 @@ const EventsPanel: Component<TEvent> = (props) => {
         class={`bg-white dark:bg-gray-800 rounded-t-lg shadow dark:shadow-gray-900/50 p-4 sticky top-4 h-full ${props.roundedFull ? 'rounded-lg' : 'rounded-t-lg'}`}
       >
         <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-          {isSameDay(store.selectedDate, new Date())
-            ? `Today  ${todayFormatted()}`
-            : selectedDayFormatted()}
+          {isSameDayMemo() ? `Today  ${todayFormatted()}` : selectedDayFormatted()}
         </h3>
 
         <Show when={store.error}>
@@ -92,10 +101,10 @@ const EventsPanel: Component<TEvent> = (props) => {
         </Show>
 
         <Show when={!store.loading}>
-          <div class="space-y-3">
+          <div class={cn('space-y-3', props.class)}>
             <For each={selectedDayEvents()}>
               {(event) => {
-                const isPast = isEventInPast(event);
+                const isPast = isSameDayMemo() ? isEventInPast(event) : false;
                 const isNextUpcoming = nextUpcomingEvent()?.id === event.id;
                 return (
                   <div
@@ -103,7 +112,7 @@ const EventsPanel: Component<TEvent> = (props) => {
                     class={`border-l-4 pl-3 py-2 transition-all ${
                       isPast
                         ? 'border-gray-400 dark:border-gray-600 opacity-50'
-                        : isNextUpcoming
+                        : isNextUpcoming && !isPast
                           ? 'border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-900/20'
                           : 'border-blue-500'
                     }`}
@@ -124,10 +133,8 @@ const EventsPanel: Component<TEvent> = (props) => {
                           : 'text-gray-600 dark:text-gray-400'
                       }`}
                     >
-                      🕐 {formatTime(event.startDate, locale())}
-                      <Show when={event.endDate}>
-                        {' - ' + formatTime(event.endDate!, locale())}
-                      </Show>
+                      {event.isAllDay ? '📅' : '🕐'}{' '}
+                      {formatEventTime(event.startDate, event.endDate, locale(), event.isAllDay)}
                     </div>
                     <Show when={event.location}>
                       <div

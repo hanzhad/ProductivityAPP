@@ -1,11 +1,30 @@
 import { getLocaleDateFormat, Language } from '../../utils/i18n';
 
-export const formatTime = (dateString: string, locale: Language) => {
+export const formatTime = (dateString: string, locale: Language, isAllDay?: boolean) => {
+  if (isAllDay) {
+    return 'All day';
+  }
   const date = new Date(dateString);
   return date.toLocaleTimeString(getLocaleDateFormat(locale), {
     hour: '2-digit',
     minute: '2-digit',
   });
+};
+
+export const formatEventTime = (
+  startDate: string,
+  endDate: string | undefined,
+  locale: Language,
+  isAllDay: boolean
+) => {
+  if (isAllDay) {
+    return 'All day';
+  }
+  const start = formatTime(startDate, locale);
+  if (endDate) {
+    return `${start} - ${formatTime(endDate, locale)}`;
+  }
+  return start;
 };
 
 export const isSameDay = (date1: Date, date2: Date) => {

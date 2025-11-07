@@ -3,8 +3,7 @@ import { isSameDay } from '../../utils';
 import { TCalendarDay } from '../../types';
 import { useI18n } from '../../../../utils/i18n';
 import { useCalendarStore } from '../../../../stores';
-
-const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+import { weekDays } from '../../constants';
 
 const CalendarGrid: Component = () => {
   const { locale } = useI18n();
@@ -38,16 +37,19 @@ const CalendarGrid: Component = () => {
     const currentDay = current.getDay();
     const today = new Date();
 
-    // Get Sunday of current week
-    const sunday = new Date(current);
-    sunday.setDate(current.getDate() - currentDay);
+    // Convert Sunday (0) to 7, so Monday becomes 0
+    const dayOfWeek = currentDay === 0 ? 6 : currentDay - 1;
+
+    // Get Monday of current week
+    const monday = new Date(current);
+    monday.setDate(current.getDate() - dayOfWeek);
 
     const days: TCalendarDay[] = [];
 
-    // Generate 7 days starting from Sunday
+    // Generate 7 days starting from Monday
     for (let i = 0; i < 7; i++) {
-      const date = new Date(sunday);
-      date.setDate(sunday.getDate() + i);
+      const date = new Date(monday);
+      date.setDate(monday.getDate() + i);
 
       const dayEvents = store.events.filter((event) => {
         const eventDate = new Date(event.startDate);
@@ -109,17 +111,21 @@ const CalendarGrid: Component = () => {
                   <div class="flex flex-wrap gap-2">
                     <For each={day.events}>
                       {(event) => {
-                        const startTime = new Date(event.startDate).toLocaleTimeString(locale(), {
-                          hour: 'numeric',
-                          minute: '2-digit',
-                          hour12: true,
-                        });
+                        const startTime = event.isAllDay
+                          ? 'All day'
+                          : new Date(event.startDate).toLocaleTimeString(locale(), {
+                              hour: 'numeric',
+                              minute: '2-digit',
+                              hour12: true,
+                            });
                         return (
                           <div
                             class={`text-sm px-3 py-2 rounded-lg flex-shrink-0 max-w-[100px] ${
                               isEventInPast(event)
                                 ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 line-through opacity-60'
-                                : 'bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200'
+                                : event.isAllDay
+                                  ? 'bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-200'
+                                  : 'bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200'
                             }`}
                             title={event.title}
                           >

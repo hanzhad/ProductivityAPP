@@ -3,8 +3,7 @@ import { isSameDay } from '../../utils';
 import { TCalendarDay } from '../../types';
 import { useCalendarStore } from '../../../../stores';
 import { useI18n } from '../../../../utils/i18n';
-
-const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+import { weekDays } from '../../constants';
 
 const CalendarGrid: Component = () => {
   const { locale } = useI18n();
@@ -26,12 +25,13 @@ const CalendarGrid: Component = () => {
 
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
-    const startingDayOfWeek = firstDay.getDay();
+    // Convert Sunday (0) to 7, so Monday is 0
+    const startingDayOfWeek = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
     const today = new Date();
 
     const days: TCalendarDay[] = [];
 
-    // Previous month days
+    // Previous month days (to fill from Monday)
     const prevMonthLastDay = new Date(year, month, 0);
     for (let i = startingDayOfWeek - 1; i >= 0; i--) {
       const date = new Date(year, month - 1, prevMonthLastDay.getDate() - i);
@@ -131,9 +131,13 @@ const CalendarGrid: Component = () => {
                         class={`text-xs px-1.5 py-0.5 rounded truncate ${
                           isEventInPast(event)
                             ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 line-through opacity-60'
-                            : 'bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200'
+                            : event.isAllDay
+                              ? 'bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-200'
+                              : 'bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200'
                         }`}
+                        title={event.isAllDay ? `${event.title} (All day)` : event.title}
                       >
+                        {event.isAllDay && '📅 '}
                         {event.title}
                       </div>
                     )}
