@@ -1,6 +1,6 @@
 import { Capacitor, registerPlugin } from '@capacitor/core';
 import { AppleReminder, AppleRemindersPlugin } from '../../types/apple-reminders.type';
-import { Task, TaskPriority } from '../../stores';
+import { Reminder, ReminderPriority } from '../../types/remiders.type';
 
 const AppleReminders = registerPlugin<AppleRemindersPlugin>('AppleReminders', {
   web: () => ({
@@ -14,7 +14,7 @@ const AppleReminders = registerPlugin<AppleRemindersPlugin>('AppleReminders', {
 /**
  * Convert Apple priority (0-9) to app priority (low, medium, high)
  */
-const convertPriority = (applePriority: number): TaskPriority => {
+const convertPriority = (applePriority: number): ReminderPriority => {
   if (applePriority >= 1 && applePriority <= 4) {
     return 'high';
   } else if (applePriority === 5) {
@@ -27,7 +27,7 @@ const convertPriority = (applePriority: number): TaskPriority => {
 /**
  * Convert Apple Reminder to App Task
  */
-const convertReminderToTask = (reminder: AppleReminder): Task => {
+const convertReminderToTask = (reminder: AppleReminder): Reminder => {
   return {
     id: reminder.id,
     title: reminder.title,
@@ -97,7 +97,7 @@ export const appleRemindersService = {
   /**
    * Fetch tasks from Apple Reminders
    */
-  async getTasks(includeCompleted: boolean = false): Promise<Task[]> {
+  async getTasks(includeCompleted: boolean = false): Promise<Reminder[]> {
     // Only available on iOS
     if (!this.isIOS()) {
       return [];

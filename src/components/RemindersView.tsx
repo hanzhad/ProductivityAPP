@@ -1,16 +1,17 @@
 import { Component, For, onCleanup, onMount, Show } from 'solid-js';
 import { App } from '@capacitor/app';
 import { getLocaleDateFormat, useI18n } from '../utils/i18n';
-import { TaskPriority, useTasksStore } from '../stores';
+import { useRemindersStore } from '../stores';
+import { ReminderPriority } from '../types/remiders.type';
 
 const RemindersView: Component = () => {
   const { t, locale } = useI18n();
-  const { store, loadTasks, stopAutoReload, startAutoReload } = useTasksStore();
+  const { store, loadReminders, stopAutoReload, startAutoReload } = useRemindersStore();
 
   let appStateListener: any;
 
   onMount(async () => {
-    await loadTasks();
+    await loadReminders();
 
     // Start auto-reload timer (will only work on iOS)
     await startAutoReload();
@@ -18,7 +19,7 @@ const RemindersView: Component = () => {
     // Listen for app state changes to resync tasks when app resumes
     appStateListener = await App.addListener('appStateChange', async (state) => {
       if (state.isActive) {
-        await loadTasks(true); // Silent reload to avoid showing loading spinner
+        await loadReminders(true); // Silent reload to avoid showing loading spinner
       }
     });
   });
@@ -42,7 +43,7 @@ const RemindersView: Component = () => {
     });
   };
 
-  const getPriorityBadge = (priority: TaskPriority) => {
+  const getPriorityBadge = (priority: ReminderPriority) => {
     const variants: Record<string, 'error' | 'warning' | 'success'> = {
       high: 'error',
       medium: 'warning',
@@ -82,7 +83,7 @@ const RemindersView: Component = () => {
         </div>
       </Show>
 
-      <Show when={!store.loading && store.tasks.length === 0}>
+      <Show when={!store.loading && store.reminders.length === 0}>
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-12 text-center">
           <p class="text-xl text-gray-500 dark:text-gray-400">{t('tasks.noTasks')}</p>
         </div>
@@ -90,7 +91,7 @@ const RemindersView: Component = () => {
 
       <div class="max-h-[calc(100vh-12rem)] overflow-y-auto scroll-smooth pr-2">
         <div class="flex flex-col gap-3">
-          <For each={store.tasks}>
+          <For each={store.reminders}>
             {(task) => {
               const priorityBadge = getPriorityBadge(task.priority);
               return (

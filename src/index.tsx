@@ -20,3 +20,6 @@ render(
   ),
   root!
 );
+export { Reminder } from './types/remiders.type';
+export { ReminderPriority } from './types/remiders.type';
+export { ReminderStatus } from './types/remiders.type';
