@@ -50,9 +50,32 @@ const isSameDay = (date1: Date, date2: Date) => {
   );
 };
 
+const areEventsEqual = (events1: CalendarEvent[], events2: CalendarEvent[]) => {
+  if (events1.length !== events2.length) return false;
+
+  // Sort both arrays by id for comparison
+  const sorted1 = [...events1].sort((a, b) => a.id.localeCompare(b.id));
+  const sorted2 = [...events2].sort((a, b) => a.id.localeCompare(b.id));
+
+  return sorted1.every((event, index) => {
+    const otherEvent = sorted2[index];
+    return (
+      event.id === otherEvent.id &&
+      event.title === otherEvent.title &&
+      event.startDate === otherEvent.startDate &&
+      event.endDate === otherEvent.endDate &&
+      event.location === otherEvent.location &&
+      event.description === otherEvent.description
+    );
+  });
+};
+
 export const useCalendarStore = () => {
-  const setEvents = (events: CalendarEvent[]) => {
-    setCalendarStore('events', events);
+  const setEvents = (events: CalendarEvent[], forceUpdate = false) => {
+    // Only update if events have changed or force update is requested
+    if (forceUpdate || !areEventsEqual(calendarStore.events, events)) {
+      setCalendarStore('events', events);
+    }
   };
 
   const setLoading = (loading: boolean) => {
@@ -195,17 +218,14 @@ export const useCalendarStore = () => {
     scheduleNextDayChange(onDayChange);
   };
 
-  const startAutoReload = (loadCallback: () => Promise<void>) => {
+  const startAutoReload = (loadCallback: () => void | Promise<void>) => {
     // Stop any existing auto-reload timer
     stopAutoReload();
 
     // Set up platform-aware interval to reload events periodically
     autoReloadIntervalId = platformTimerManager.setInterval(() => {
-      console.log('Auto-reloading calendar events...');
       loadCallback(); // Call the loadEvents function
     }, 30 * 1000); // 30 seconds
-
-    console.log('Calendar auto-reload started');
   };
 
   const stopAutoReload = () => {

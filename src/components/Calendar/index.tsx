@@ -26,8 +26,8 @@ const Calendar: Component = () => {
     // Initialize all timer jobs (updates time every minute, auto day/month change)
     initializeTimers(loadEvents);
 
-    // Start auto-reload timer for periodic event syncing
-    startAutoReload(loadEvents);
+    // Start auto-reload timer for periodic event syncing (silent mode to avoid flickering)
+    startAutoReload(() => loadEvents(true));
 
     // Listen for app state changes to resync calendar when app resumes
     appStateListener = await App.addListener('appStateChange', async (state) => {
@@ -51,9 +51,11 @@ const Calendar: Component = () => {
     scheduleResetToToday(selected);
   });
 
-  const loadEvents = async () => {
+  const loadEvents = async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) {
+        setLoading(true);
+      }
       setError('');
       const current = store.currentDate;
       const startOfMonth = new Date(current.getFullYear(), current.getMonth(), 1);

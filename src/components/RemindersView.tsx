@@ -89,7 +89,7 @@ const RemindersView: Component = () => {
         </div>
       </Show>
 
-      <div class="max-h-[calc(100vh-12rem)] overflow-y-auto scroll-smooth pr-2">
+      <div class="max-h-[calc(100vh-32px-24px-16px)] overflow-y-auto scroll-smooth pr-2">
         <div class="flex flex-col gap-3">
           <For each={store.reminders}>
             {(task) => {

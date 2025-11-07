@@ -74,23 +74,24 @@ export const useRemindersStore = () => {
       // Try to load from Apple Reminders if on iOS
       const { appleRemindersService } = await import('../utils/apple/apple-reminders.service');
 
-      if (appleRemindersService.isIOS()) {
-        try {
-          const reminders = await appleRemindersService.getTasks(false);
-          setReminders(reminders);
-          return;
-        } catch (error: any) {
-          console.error(
-            'Failed to load Apple Reminders, falling back to demo data:',
-            error?.message || error?.code || error
-          );
-          if (!silent) {
-            setError('errors.appleRemindersAccess');
-          }
-        }
+      if (!appleRemindersService.isIOS()) {
+        setReminders([]);
+        return;
       }
 
-      setReminders([]);
+      try {
+        const reminders = await appleRemindersService.getTasks(false);
+        setReminders(reminders);
+        return;
+      } catch (error: any) {
+        console.error(
+          'Failed to load Apple Reminders, falling back to demo data:',
+          error?.message || error?.code || error
+        );
+        if (!silent) {
+          setError('errors.appleRemindersAccess');
+        }
+      }
     } catch (e: any) {
       console.error('Error loading reminders:', e?.message || e?.code || e);
       if (!silent) {

@@ -1,7 +1,7 @@
 export type ReminderStatus = 'todo' | 'in-progress' | 'done';
 export type ReminderPriority = 'low' | 'medium' | 'high';
 
-export interface Reminder {
+export type Reminder = {
   id: string;
   title: string;
   description: string;
@@ -16,4 +16,4 @@ export interface Reminder {
   completedAt?: Date;
   completed: boolean;
   notes?: string;
-}
+};
