@@ -45,10 +45,11 @@ const EventsPanel: Component<TEvent> = (props) => {
     });
   });
 
-  const nextUpcomingEvent = createMemo(() => {
+  const currentOngoingEvent = createMemo(() => {
     const events = selectedDayEvents();
+    const currentTime = store.currentTime;
 
-    // Find the first event that hasn't ended yet (is not in the past)
+    // Find event that is currently happening (started but not ended)
     return events.find((event) => {
       if (!isSameDayMemo()) {
         return false;
@@ -57,17 +58,43 @@ const EventsPanel: Component<TEvent> = (props) => {
       if (event.isAllDay) {
         return false;
       }
-      return !isEventInPast(event);
+
+      const eventStartDate = new Date(event.startDate);
+      const eventEndDate = event.endDate ? new Date(event.endDate) : new Date(event.startDate);
+
+      // Event is ongoing if: start <= now < end
+      return eventStartDate <= currentTime && currentTime < eventEndDate;
     });
   });
 
-  // Auto-scroll to next upcoming event when current event becomes past
-  createEffect(() => {
-    const nextEvent = nextUpcomingEvent();
+  const nextUpcomingEvent = createMemo(() => {
+    const events = selectedDayEvents();
+    const currentTime = store.currentTime;
 
-    if (nextEvent && isSameDayMemo()) {
+    // Find the first event that hasn't started yet
+    return events.find((event) => {
+      if (!isSameDayMemo()) {
+        return false;
+      }
+
+      if (event.isAllDay) {
+        return false;
+      }
+
+      const eventStartDate = new Date(event.startDate);
+      return eventStartDate > currentTime;
+    });
+  });
+
+  // Auto-scroll to current ongoing event, or next upcoming event
+  createEffect(() => {
+    const ongoingEvent = currentOngoingEvent();
+    const nextEvent = nextUpcomingEvent();
+    const targetEvent = ongoingEvent || nextEvent;
+
+    if (targetEvent && isSameDayMemo()) {
       // Only auto-scroll on today's events
-      const eventElement = document.querySelector(`[data-event-id="${nextEvent.id}"]`);
+      const eventElement = document.querySelector(`[data-event-id="${targetEvent.id}"]`);
       if (eventElement) {
         eventElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
@@ -105,6 +132,7 @@ const EventsPanel: Component<TEvent> = (props) => {
             <For each={selectedDayEvents()}>
               {(event) => {
                 const isPast = isSameDayMemo() ? isEventInPast(event) : false;
+                const isOngoing = currentOngoingEvent()?.id === event.id;
                 const isNextUpcoming = nextUpcomingEvent()?.id === event.id;
                 return (
                   <div
@@ -112,9 +140,11 @@ const EventsPanel: Component<TEvent> = (props) => {
                     class={`border-l-4 pl-3 py-2 transition-all ${
                       isPast
                         ? 'border-gray-400 dark:border-gray-600 opacity-50'
-                        : isNextUpcoming && !isPast
-                          ? 'border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-900/20'
-                          : 'border-blue-500'
+                        : isOngoing
+                          ? 'border-orange-500 dark:border-orange-400 bg-orange-50 dark:bg-orange-900/20 animate-pulse'
+                          : isNextUpcoming
+                            ? 'border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-900/20'
+                            : 'border-blue-500'
                     }`}
                   >
                     <h4
