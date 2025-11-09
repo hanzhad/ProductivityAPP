@@ -1,8 +1,10 @@
-import { formatEventTime, isSameDay } from '../utils';
+import { isSameDay } from '../utils';
 import { Component, createEffect, createMemo, For, Show } from 'solid-js';
 import { getLocaleDateFormat, useI18n } from '../../../utils/i18n';
 import { useCalendarStore } from '../../../stores';
 import cn from 'classnames';
+import { EventTimeTypeEnum, eventTimeTypeToStyle, getEventTimeType, getNextEvent } from './utils';
+import EventItem from './EventItem';
 
 type TEvent = {
   roundedFull?: boolean;
@@ -12,7 +14,11 @@ type TEvent = {
 const EventsPanel: Component<TEvent> = (props) => {
   const { t, locale } = useI18n();
 
-  const { store, isEventInPast } = useCalendarStore();
+  const { store } = useCalendarStore();
+
+  const currentTime = createMemo(() => {
+    return store.currentTime;
+  });
 
   const isSameDayMemo = createMemo(() => {
     const today = store.currentDate;
@@ -39,72 +45,54 @@ const EventsPanel: Component<TEvent> = (props) => {
 
   const selectedDayEvents = createMemo(() => {
     const selected = store.selectedDate;
-    return store.events.filter((event) => {
-      const eventDate = new Date(event.startDate);
-      return isSameDay(eventDate, selected);
-    });
+    return store.events
+      .filter((event) => {
+        const eventDate = new Date(event.startDate);
+        return isSameDay(eventDate, selected);
+      })
+      .sort((eventA, eventB) => {
+        const fullDayA = eventA.isAllDay ? 0 : 1;
+        const fullDayB = eventB.isAllDay ? 0 : 1;
+        if (fullDayA !== fullDayB) {
+          return fullDayA - fullDayB;
+        }
+        const eventATime = new Date(eventA.startDate);
+        const eventBTime = new Date(eventB.startDate);
+        return eventATime.getTime() - eventBTime.getTime();
+      });
   });
 
-  const currentOngoingEvent = createMemo(() => {
-    const events = selectedDayEvents();
-    const currentTime = store.currentTime;
-
-    // Find event that is currently happening (started but not ended)
-    return events.find((event) => {
-      if (!isSameDayMemo()) {
-        return false;
-      }
-
-      if (event.isAllDay) {
-        return false;
-      }
-
-      const eventStartDate = new Date(event.startDate);
-      const eventEndDate = event.endDate ? new Date(event.endDate) : new Date(event.startDate);
-
-      // Event is ongoing if: start <= now < end
-      return eventStartDate <= currentTime && currentTime < eventEndDate;
-    });
-  });
-
-  const nextUpcomingEvent = createMemo(() => {
-    const events = selectedDayEvents();
-    const currentTime = store.currentTime;
-
-    // Find the first event that hasn't started yet
-    return events.find((event) => {
-      if (!isSameDayMemo()) {
-        return false;
-      }
-
-      if (event.isAllDay) {
-        return false;
-      }
-
-      const eventStartDate = new Date(event.startDate);
-      return eventStartDate > currentTime;
-    });
+  const nextEvent = createMemo(() => {
+    return getNextEvent(selectedDayEvents(), currentTime());
   });
 
   // Auto-scroll to current ongoing event, or next upcoming event
   createEffect(() => {
-    const ongoingEvent = currentOngoingEvent();
-    const nextEvent = nextUpcomingEvent();
-    const targetEvent = ongoingEvent || nextEvent;
+    const _currentTime = currentTime();
 
-    if (targetEvent && isSameDayMemo()) {
-      // Only auto-scroll on today's events
-      const eventElement = document.querySelector(`[data-event-id="${targetEvent.id}"]`);
-      if (eventElement) {
-        eventElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }
+    const isSameDay = isSameDayMemo();
+
+    if (!isSameDay) {
+      return;
+    }
+
+    const id = nextEvent()?.id;
+
+    if (!id) {
+      return;
+    }
+
+    const eventElement = document.querySelector(`[data-event-id="${id}"]`);
+
+    if (eventElement) {
+      eventElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   });
 
   return (
     <div class="lg:w-80 h-full">
       <div
-        class={`bg-white dark:bg-gray-800 rounded-t-lg shadow dark:shadow-gray-900/50 p-4 sticky top-4 h-full ${props.roundedFull ? 'rounded-lg' : 'rounded-t-lg'}`}
+        class={`bg-white dark:bg-gray-800 rounded-t-lg shadow dark:shadow-gray-900/50 p-4 ${props.roundedFull ? 'rounded-lg' : 'rounded-t-lg'}`}
       >
         <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
           {isSameDayMemo() ? `Today  ${todayFormatted()}` : selectedDayFormatted()}
@@ -131,75 +119,20 @@ const EventsPanel: Component<TEvent> = (props) => {
           <div class={cn('space-y-3', props.class)}>
             <For each={selectedDayEvents()}>
               {(event) => {
-                const isPast = isSameDayMemo() ? isEventInPast(event) : false;
-                const isOngoing = currentOngoingEvent()?.id === event.id;
-                const isNextUpcoming = nextUpcomingEvent()?.id === event.id;
+                // Evaluate these once for all events in the list
+                const type = getEventTimeType(
+                  event,
+                  selectedDayEvents(),
+                  isSameDayMemo(),
+                  currentTime()
+                );
+
                 return (
-                  <div
-                    data-event-id={event.id}
-                    class={`border-l-4 pl-3 py-2 transition-all ${
-                      isPast
-                        ? 'border-gray-400 dark:border-gray-600 opacity-50'
-                        : isOngoing
-                          ? 'border-orange-500 dark:border-orange-400 bg-orange-50 dark:bg-orange-900/20 animate-pulse'
-                          : isNextUpcoming
-                            ? 'border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-900/20'
-                            : 'border-blue-500'
-                    }`}
-                  >
-                    <h4
-                      class={`font-semibold text-sm mb-1 ${
-                        isPast
-                          ? 'text-gray-500 dark:text-gray-500 line-through'
-                          : 'text-gray-900 dark:text-gray-100'
-                      }`}
-                    >
-                      {event.title}
-                    </h4>
-                    <div
-                      class={`text-xs mb-1 ${
-                        isPast
-                          ? 'text-gray-400 dark:text-gray-600'
-                          : 'text-gray-600 dark:text-gray-400'
-                      }`}
-                    >
-                      {event.isAllDay ? '📅' : '🕐'}{' '}
-                      {formatEventTime(event.startDate, event.endDate, locale(), event.isAllDay)}
-                    </div>
-                    <Show when={event.location}>
-                      <div
-                        class={`text-xs mb-1 ${
-                          isPast
-                            ? 'text-gray-400 dark:text-gray-600'
-                            : 'text-gray-600 dark:text-gray-400'
-                        }`}
-                      >
-                        📍 {event.location}
-                      </div>
-                    </Show>
-                    <Show when={event.calendarTitle}>
-                      <span
-                        class={`inline-block px-2 py-0.5 rounded text-xs ${
-                          isPast
-                            ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-500'
-                            : 'bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200'
-                        }`}
-                      >
-                        {event.calendarTitle}
-                      </span>
-                    </Show>
-                    <Show when={event.notes}>
-                      <div
-                        class={`mt-2 text-xs ${
-                          isPast
-                            ? 'text-gray-500 dark:text-gray-600'
-                            : 'text-gray-700 dark:text-gray-300'
-                        }`}
-                      >
-                        {event.notes}
-                      </div>
-                    </Show>
-                  </div>
+                  <EventItem
+                    event={event}
+                    isPast={type === EventTimeTypeEnum.PAST_EVENT}
+                    class={eventTimeTypeToStyle(type)}
+                  />
                 );
               }}
             </For>

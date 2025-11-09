@@ -1,8 +1,10 @@
 import { createStore } from 'solid-js/store';
 import { CalendarEvent } from '../types/google.type';
 import { platformTimerManager } from '../utils/platform-timer.manager';
+import { calendarService } from '../utils/calendar-factory/calendar.service.factory';
+import { App } from '@capacitor/app';
 
-const TIME_OUT = 10 * 1000; // 60 seconds
+const RESET_TO_TODAY_TIMEOUT = 60 * 1000; // 60 seconds - time before auto-reset to today
 
 interface CalendarState {
   events: CalendarEvent[];
@@ -24,11 +26,12 @@ const [calendarStore, setCalendarStore] = createStore<CalendarState>({
   selectedDate: new Date(),
 });
 
-// Timer IDs
+// Timer IDs and listener references
 let timeUpdateIntervalId: string | null = null;
 let midnightTimeoutId: string | null = null;
 let resetTodayTimeoutId: string | null = null;
 let autoReloadIntervalId: string | null = null;
+let appStateListener: any = null;
 
 // Helper functions
 const getMillisecondsUntilMidnight = () => {
@@ -156,16 +159,18 @@ export const useCalendarStore = () => {
 
     // Use a one-time interval that reschedules itself
     midnightTimeoutId = platformTimerManager.setInterval(() => {
-      const today = new Date();
-      const wasLastDay = isLastDayOfMonth(new Date(today.getTime() - 1000)); // Check yesterday
+      const now = new Date();
+      const wasLastDay = isLastDayOfMonth(new Date(now.getTime() - 1000)); // Check yesterday
 
-      setSelectedDate(new Date(today));
-      setCurrentDate(new Date(today));
-      setCurrentTime(new Date(today));
+      // Update all date/time references to the new day
+      setSelectedDate(now);
+      setCurrentDate(now);
+      setCurrentTime(now);
 
-      // If we just passed the last day of the month, advance to next month
+      // If we just passed the last day of the month, advance currentDate to next month
+      // (This ensures the calendar view shows the correct month)
       if (wasLastDay) {
-        const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+        const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
         setCurrentDate(nextMonth);
       }
 
@@ -201,18 +206,32 @@ export const useCalendarStore = () => {
           platformTimerManager.clearInterval(resetTodayTimeoutId);
           resetTodayTimeoutId = null;
         }
-      }, TIME_OUT); // 60 seconds
+      }, RESET_TO_TODAY_TIMEOUT);
     }
   };
 
   const initializeTimers = (onDayChange?: () => void) => {
-    // Clear any existing timers first
-    cleanupTimers();
+    // Clear any existing timers first (but not app listener)
+    if (timeUpdateIntervalId) {
+      platformTimerManager.clearInterval(timeUpdateIntervalId);
+      timeUpdateIntervalId = null;
+    }
+    if (midnightTimeoutId) {
+      platformTimerManager.clearInterval(midnightTimeoutId);
+      midnightTimeoutId = null;
+    }
+    if (resetTodayTimeoutId) {
+      platformTimerManager.clearInterval(resetTodayTimeoutId);
+      resetTodayTimeoutId = null;
+    }
 
-    // Job that runs every minute to update current time and check for past events
+    // Job that runs every second to update current time for real-time event tracking
     timeUpdateIntervalId = platformTimerManager.setInterval(() => {
-      setCurrentTime(new Date());
-    }, TIME_OUT); // 60 seconds
+      const now = new Date();
+      setCurrentTime(now);
+      // Note: currentDate is NOT updated here - it represents the calendar view date
+      // and should only change at midnight or when user navigates months
+    }, 1000); // 1 second for responsive event state updates
 
     // Schedule automatic day change at midnight
     scheduleNextDayChange(onDayChange);
@@ -232,11 +251,11 @@ export const useCalendarStore = () => {
     if (autoReloadIntervalId) {
       platformTimerManager.clearInterval(autoReloadIntervalId);
       autoReloadIntervalId = null;
-      console.log('Calendar auto-reload stopped');
     }
   };
 
-  const cleanupTimers = () => {
+  const cleanup = () => {
+    // Clear all timers
     if (timeUpdateIntervalId) {
       platformTimerManager.clearInterval(timeUpdateIntervalId);
       timeUpdateIntervalId = null;
@@ -249,8 +268,15 @@ export const useCalendarStore = () => {
       platformTimerManager.clearInterval(resetTodayTimeoutId);
       resetTodayTimeoutId = null;
     }
-    // Also stop auto-reload when cleaning up all timers
+
+    // Stop auto-reload
     stopAutoReload();
+
+    // Remove app state listener
+    if (appStateListener) {
+      appStateListener.remove();
+      appStateListener = null;
+    }
   };
 
   const isEventInPast = (event: CalendarEvent) => {
@@ -271,8 +297,62 @@ export const useCalendarStore = () => {
     return eventEndDate < now;
   };
 
+  const loadEvents = async (silent = false) => {
+    try {
+      if (!silent) {
+        setLoading(true);
+      }
+      setError('');
+      const current = calendarStore.currentDate;
+      const startOfMonth = new Date(current.getFullYear(), current.getMonth(), 1);
+      const endOfMonth = new Date(current.getFullYear(), current.getMonth() + 1, 0);
+
+      // Initialize calendar service if not already done
+      if (calendarService.isAvailable()) {
+        try {
+          await calendarService.initialize();
+          const calendarEvents = await calendarService.fetchEvents(startOfMonth, endOfMonth);
+          setEvents(calendarEvents);
+        } catch (err: any) {
+          // If permission is denied or initialization fails, just show empty calendar
+          console.warn('Calendar not accessible:', err?.message || err);
+          setEvents([]);
+          // Don't set error - let the calendar show as empty
+        }
+      } else {
+        setEvents([]);
+      }
+    } catch (err: any) {
+      console.error('Error loading events:', err?.message || err?.code || err);
+      // Only set error for unexpected errors
+      if (err?.message && !err.message.includes('permission')) {
+        setError('Error loading events');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const initialize = async () => {
+    // Load initial events
+    await loadEvents();
+
+    // Initialize all timer jobs (updates time every second, auto day/month change)
+    initializeTimers(loadEvents);
+
+    // Start auto-reload timer for periodic event syncing (silent mode to avoid flickering)
+    startAutoReload(() => loadEvents(true));
+
+    // Listen for app state changes to resync calendar when app resumes
+    appStateListener = await App.addListener('appStateChange', async (state) => {
+      if (state.isActive) {
+        await loadEvents();
+      }
+    });
+  };
+
   const reset = () => {
-    cleanupTimers();
+    cleanup();
     setCalendarStore({
       events: [],
       loading: false,
@@ -298,15 +378,13 @@ export const useCalendarStore = () => {
     clearEvents,
     selectEvent,
     getEventById,
-    initializeTimers,
-    cleanupTimers,
     scheduleResetToToday,
     isEventInPast,
     previousMonth,
     nextMonth,
     getMonthYearText,
-    reset,
-    startAutoReload,
-    stopAutoReload,
+    initialize,
+    cleanup,
+    loadEvents,
   };
 };

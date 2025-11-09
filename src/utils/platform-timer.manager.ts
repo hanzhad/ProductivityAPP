@@ -91,6 +91,52 @@ class PlatformTimerManager {
     return this.timers.size;
   }
 
+  /**
+   * Creates a platform-aware timeout.
+   *
+   * @param callback - Function to execute after the delay
+   * @param delay - Delay duration in milliseconds (default: 0)
+   * @returns Timer ID that can be used to clear the timeout
+   */
+  setTimeout(callback: TimerCallback, delay: number = 0): string {
+    const timerId = this.generateTimerId();
+
+    const timeoutId = setTimeout(() => {
+      callback();
+      this.timers.delete(timerId);
+    }, delay) as unknown as number;
+
+    const timer: Timer = {
+      id: timerId,
+      callback,
+      interval: delay,
+      intervalId: timeoutId,
+      isRunning: true,
+      appStateListener: null,
+      visibilityListener: null,
+    };
+
+    this.timers.set(timerId, timer);
+    return timerId;
+  }
+
+  /**
+   * Clears a timeout by its ID.
+   *
+   * @param timerId - The ID returned by setTimeout
+   */
+  clearTimeout(timerId: string): void {
+    const timer = this.timers.get(timerId);
+    if (!timer) {
+      return;
+    }
+
+    if (timer.intervalId !== null) {
+      clearTimeout(timer.intervalId);
+    }
+    this.timers.delete(timerId);
+  }
+
   private startTimer(timer: Timer): void {
     if (timer.isRunning) {
       return;
